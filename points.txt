@@ -1,0 +1,24 @@
+user - 
+    id
+    username
+    password
+    address - [x,y]
+
+tree - 
+    id
+    location - [x,y]
+    planted_by - USER_ID
+
+clusters - 
+    id
+    tree_list - [TREE_ID]
+    centroid - [x,y]
+
+API calls - 
+1. Make Clusters - PUT
+2. Add Tree - POST
+3. Retrieve Clusters - GET
+4. Login - POST
+5. Signup - POST
+6. Get Nearest Cluster - GET
+7. Logout - POST
