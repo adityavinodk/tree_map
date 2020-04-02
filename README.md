@@ -16,13 +16,21 @@ $ cd tree_map
 $ pip install -r requirements.txt
 ```
 
-4. Type the following command to create `secret.key` file in server directory:
+4. Move into the `server` directory and type the following command to create `secret.key` file:
 ```sh
 $ cd server
 $ openssl rand 256 > secret.key
 ```
 
-5. Keep Mongo running and start the server -
+5. Move into the `frontend` directory and type the following command to make the frontend build:
+```sh
+$ cd frontend
+$ npm run build
+```
+
+6. Keep Mongo running and start the server in the `server` directory:
 ```sh
 $ python app.py
 ```
+
+Open the link at the server's running port in the browser

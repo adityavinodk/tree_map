@@ -1,4 +1,4 @@
-from flask import Flask, request, Response, session
+from flask import Flask, request, Response, session, render_template
 from flask_cors import CORS
 import pymongo as pym
 import json
@@ -29,8 +29,13 @@ except pym.errors.ServerSelectionTimeoutError as err:
     print('\n----------------------------------------------------------------\nMongo not connected. Exiting app...\n----------------------------------------------------------------')
     exit()
 
+# Serve React App
+@app.route('/')
+def my_index():
+    return render_template("index.html")
+
 # Endpoint to signup user
-@app.route('/users/signup', methods=['POST', 'OPTIONS'])
+@app.route('/api/users/signup', methods=['POST'])
 def signup():
     if request.method=='OPTIONS':
         return Response({'message': "200 OK"}, status=200, mimetype='application/json')
@@ -49,14 +54,14 @@ def signup():
                 req_data['password'].encode()).hexdigest()
             data = {'username': req_data['username'],
                     'password': hashed_password, 'location': req_data['location'], 'planted_trees': []}
-            db.users.insert_one(data)
+            added_user = db.users.insert_one(data)
             token = authenticateUser(db, data['username'], data['password'], key)
             message = 'User successfully added'
             success = True
-            return Response(json.dumps({'message': message, 'success': success, 'token': token}), status=200, mimetype='application/json')
+            return Response(json.dumps({'message': message, 'success': success, 'token': token, 'user_id': str(added_user.inserted_id)}), status=200, mimetype='application/json')
 
 # Endpoint to login user
-@app.route('/users/login', methods=['POST', 'OPTIONS'])
+@app.route('/api/users/login', methods=['POST'])
 def login():
     if request.method=='OPTIONS':
         return Response({'message': "200 OK"}, status=200, mimetype='application/json')
@@ -78,14 +83,14 @@ def login():
                 token = authenticateUser(db, req_data['username'], hashed_password, key)
                 message = 'Logged in successfully'
                 success = True
-                return Response(json.dumps({'message': message, 'success': success, 'token': token}), status=200, mimetype='application/json')
+                return Response(json.dumps({'message': message, 'success': success, 'token': token, 'user_id': str(user_found['_id'])}), status=200, mimetype='application/json')
             else:
                 message = 'Error: Invalid Credentials'
                 success = False
                 return Response(json.dumps({'message': message, 'success': success}), status=400, mimetype='application/json')
 
 # Endpoint to logout user
-@app.route('/users/logout', methods=['POST', 'OPTIONS'])
+@app.route('/api/users/logout', methods=['POST'])
 def logout():
     if request.method=='OPTIONS':
         return Response({'message': "200 OK"}, status=200, mimetype='application/json')
@@ -106,7 +111,7 @@ def logout():
         return Response(json.dumps({'message': message, 'success': success}), status=200, mimetype='application/json')
 
 # Endpoint to add tree at a particular location
-@app.route('/tree/plant', methods=['POST', 'OPTIONS'])
+@app.route('/api/tree/plant', methods=['POST'])
 def addTree():
     if request.method=='OPTIONS':
         return Response({'message': "200 OK"}, status=200, mimetype='application/json')
@@ -138,7 +143,7 @@ def addTree():
         return Response(json.dumps({'message': message, 'success': success}), status=200, mimetype='application/json')
 
 # Endpoint to get list of trees planted by a user
-@app.route('/tree/getPlantedTrees', methods=['GET'])
+@app.route('/api/tree/getPlantedTrees', methods=['GET'])
 def getPlantedTrees():
     if 'token' not in request.headers:
         message = 'Error: Missing header token'
@@ -159,7 +164,7 @@ def getPlantedTrees():
     return Response(json.dumps({'message': message, 'success': success, 'planted_trees': tree_id_list}), status=200, mimetype='application/json')
 
 # Endpoint to create clusters based on the trees locations
-@app.route('/tree/clusters', methods=['GET'])
+@app.route('/api/tree/clusters', methods=['GET'])
 def create_clusters():
     tree_documents = db.trees.find({})  # returns a list of dictionaries
     coordinates = []
@@ -184,7 +189,7 @@ def create_clusters():
     return Response(json.dumps({'message': message, 'success': success, 'clusters': list_clusters}), status=200, mimetype='application/json')
 
 # Endpoint to get nearest clusters based on the location
-@app.route('/tree/getNearestCluster', methods=['GET'])
+@app.route('/api/tree/getNearestCluster', methods=['GET'])
 def get_nearest_cluster():
     req_data = request.get_json()
     if 'token' not in request.headers:
