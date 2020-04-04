@@ -34,81 +34,88 @@ except pym.errors.ServerSelectionTimeoutError as err:
 def my_index():
     return render_template("index.html")
 
+@app.route('/api/users/validate', methods=['GET'])
+def validateUser():
+    if 'token' not in request.headers:
+        message = 'Error: Missing header token'
+        success = False
+        return Response(json.dumps({'message': message, 'success': success}), status=400, mimetype='application/json')
+    token = request.headers['token']
+    verified = verifyUser(db, token, key)[0]
+    if not verified:
+        message = 'Error: Invalid token'
+        success = False
+        return Response(json.dumps({'message': message, 'success': success}), status=401, mimetype='application/json')
+    message = 'Validated successfully'
+    success = True
+    return Response(json.dumps({'message': message, 'success': success}), status=200, mimetype='application/json')
+
 # Endpoint to signup user
 @app.route('/api/users/signup', methods=['POST'])
 def signup():
-    if request.method=='OPTIONS':
-        return Response({'message': "200 OK"}, status=200, mimetype='application/json')
+    req_data = request.get_json()
+    if 'username' not in req_data or 'password' not in req_data or 'location' not in req_data or len(req_data['location']) != 2:
+        message = 'Error: Missing fields in request body'
+        success = False
+        return Response(json.dumps({'message': message, 'success': success}), status=400, mimetype='application/json')
+    if db.users.find_one({'username': req_data['username']}) != None:
+        message = 'Error: User already exists'
+        success = False
+        return Response(json.dumps({'message': message, 'success': success}), status=409, mimetype='application/json')
     else:
-        req_data = request.get_json()
-        if 'username' not in req_data or 'password' not in req_data or 'location' not in req_data or len(req_data['location']) != 2:
-            message = 'Error: Missing fields in request body'
-            success = False
-            return Response(json.dumps({'message': message, 'success': success}), status=400, mimetype='application/json')
-        if db.users.find_one({'username': req_data['username']}) != None:
-            message = 'Error: User already exists'
-            success = False
-            return Response(json.dumps({'message': message, 'success': success}), status=409, mimetype='application/json')
-        else:
-            hashed_password = hashlib.sha1(
-                req_data['password'].encode()).hexdigest()
-            data = {'username': req_data['username'],
-                    'password': hashed_password, 'location': req_data['location'], 'planted_trees': []}
-            added_user = db.users.insert_one(data)
-            token = authenticateUser(db, data['username'], data['password'], key)
-            message = 'User successfully added'
-            success = True
-            return Response(json.dumps({'message': message, 'success': success, 'token': token, 'user_id': str(added_user.inserted_id)}), status=200, mimetype='application/json')
-
+        hashed_password = hashlib.sha1(
+            req_data['password'].encode()).hexdigest()
+        data = {'username': req_data['username'],
+                'password': hashed_password, 'location': req_data['location'], 'planted_trees': []}
+        added_user = db.users.insert_one(data)
+        token = authenticateUser(db, data['username'], data['password'], key)
+        message = 'User successfully added'
+        success = True
+        return Response(json.dumps({'message': message, 'success': success, 'token': token, 'user_id': str(added_user.inserted_id)}), status=200, mimetype='application/json')
+    
 # Endpoint to login user
 @app.route('/api/users/login', methods=['POST'])
 def login():
-    if request.method=='OPTIONS':
-        return Response({'message': "200 OK"}, status=200, mimetype='application/json')
+    req_data = request.get_json()
+    if 'username' not in req_data or 'password' not in req_data:
+        message = 'Error: Missing fields in request body'
+        success = False
+        return Response(json.dumps({'message': message, 'success': success}), status=400, mimetype='application/json')
+    user_found = db.users.find_one({'username': req_data['username']})
+    if user_found == None:
+        message = 'Error: User not found'
+        success = False
+        return Response(json.dumps({'message': message, 'success': success}), status=404, mimetype='application/json')
     else:
-        req_data = request.get_json()
-        if 'username' not in req_data or 'password' not in req_data:
-            message = 'Error: Missing fields in request body'
+        hashed_password = hashlib.sha1(
+            req_data['password'].encode()).hexdigest()
+        if user_found['password'] == hashed_password:
+            token = authenticateUser(db, req_data['username'], hashed_password, key)
+            message = 'Logged in successfully'
+            success = True
+            return Response(json.dumps({'message': message, 'success': success, 'token': token, 'user_id': str(user_found['_id'])}), status=200, mimetype='application/json')
+        else:
+            message = 'Error: Invalid Credentials'
             success = False
             return Response(json.dumps({'message': message, 'success': success}), status=400, mimetype='application/json')
-        user_found = db.users.find_one({'username': req_data['username']})
-        if user_found == None:
-            message = 'Error: User not found'
-            success = False
-            return Response(json.dumps({'message': message, 'success': success}), status=404, mimetype='application/json')
-        else:
-            hashed_password = hashlib.sha1(
-                req_data['password'].encode()).hexdigest()
-            if user_found['password'] == hashed_password:
-                token = authenticateUser(db, req_data['username'], hashed_password, key)
-                message = 'Logged in successfully'
-                success = True
-                return Response(json.dumps({'message': message, 'success': success, 'token': token, 'user_id': str(user_found['_id'])}), status=200, mimetype='application/json')
-            else:
-                message = 'Error: Invalid Credentials'
-                success = False
-                return Response(json.dumps({'message': message, 'success': success}), status=400, mimetype='application/json')
 
 # Endpoint to logout user
 @app.route('/api/users/logout', methods=['POST'])
 def logout():
-    if request.method=='OPTIONS':
-        return Response({'message': "200 OK"}, status=200, mimetype='application/json')
-    else:
-        if 'token' not in request.headers:
-            message = 'Error: Missing header token'
-            success = False
-            return Response(json.dumps({'message': message, 'success': success}), status=400, mimetype='application/json')
-        token = request.headers['token']
-        verified = verifyUser(db, token, key)[0]
-        if not verified:
-            message = 'Error: Invalid token'
-            success = False
-            return Response(json.dumps({'message': message, 'success': success}), status=401, mimetype='application/json')
-        db.usersessions.delete_one({'token': token})
-        message = 'Logged out successfully'
-        success = True
-        return Response(json.dumps({'message': message, 'success': success}), status=200, mimetype='application/json')
+    if 'token' not in request.headers:
+        message = 'Error: Missing header token'
+        success = False
+        return Response(json.dumps({'message': message, 'success': success}), status=400, mimetype='application/json')
+    token = request.headers['token']
+    verified = verifyUser(db, token, key)[0]
+    if not verified:
+        message = 'Error: Invalid token'
+        success = False
+        return Response(json.dumps({'message': message, 'success': success}), status=401, mimetype='application/json')
+    db.usersessions.delete_one({'token': token})
+    message = 'Logged out successfully'
+    success = True
+    return Response(json.dumps({'message': message, 'success': success}), status=200, mimetype='application/json')
 
 # Endpoint to add tree at a particular location
 @app.route('/api/tree/plant', methods=['POST'])

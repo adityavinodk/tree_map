@@ -14,7 +14,8 @@ class Home extends React.Component {
             password: '',
             name: '',
             isLogin: false,
-            loading: false
+            loading: false,
+            isLoggedIn: false
         }
 
         this.onLogin = this.onLogin.bind(this);
@@ -23,11 +24,18 @@ class Home extends React.Component {
         this.onLogout = this.onLogout.bind(this);
         this.logginIn = this.logginIn.bind(this);
         this.signingUp = this.signingUp.bind(this);
-    }
+        this.validateUser = this.validateUser.bind(this);
+        this.setValidationCaller = null;
+        this.callValidation = this.callValidation.bind(this);
+}
 
     handleChange(event) {
         event.preventDefault()
         this.setState({ [event.target.name]: event.target.value })
+    }
+
+    callValidation() {
+        this.setValidationCaller = setInterval(this.validateUser, 4000);
     }
 
     onLogin(event) {
@@ -47,6 +55,10 @@ class Home extends React.Component {
             if(res.data.success){
                 ToastsStore.success(res.data.message);
                 this.props.loginUser(res.data);
+                this.setState({
+                    isLoggedIn: true
+                })
+                setTimeout(this.callValidation, 5000);
             }
         })
         .catch(err => {
@@ -78,6 +90,10 @@ class Home extends React.Component {
             if(res.data.success){
                 this.props.loginUser(res.data);
                 ToastsStore.success(res.data.message);
+                this.setState({
+                    isLoggedIn: true
+                })
+                setTimeout(this.callValidation, 5000);
             }
         })
         .catch(err => {
@@ -85,6 +101,26 @@ class Home extends React.Component {
             if(err.response.status === 409){
                 ToastsStore.error('User already exists')
             }
+        })
+    }
+
+    validateUser() {
+        axios.get("http://127.0.0.1:8000/api/users/validate", {
+            headers: {
+                'token': this.props.auth.token,
+                'Content-Type': 'application/json'
+            }
+        })
+        .catch(err => {
+            console.log(err);
+            this.props.logoutUser();
+            this.setState({
+                username: '',
+                password: '',
+                isLoggedIn: false
+            })
+            clearInterval(this.setValidationCaller);
+            ToastsStore.error("Token error, login again")
         })
     }
 
@@ -102,8 +138,10 @@ class Home extends React.Component {
                 this.props.logoutUser();
                 this.setState({
                     username: '',
-                    password: ''
+                    password: '',
+                    isLoggedIn: false
                 })
+                clearInterval(this.setValidationCaller);
             }
         })
         .catch(err => {
@@ -132,6 +170,7 @@ class Home extends React.Component {
     render(){
         var isAuthenticated = this.props.auth.isAuthenticated;
         var isLogin = this.state.isLogin;
+        var isLoggedIn = this.state.isLoggedIn;
         var content;
 
         var loginFormContent = (
@@ -255,7 +294,7 @@ class Home extends React.Component {
             </div>
         )
 
-        if(isAuthenticated) content = homeContent;
+        if(isAuthenticated && isLoggedIn) content = homeContent;
         else if(isLogin) content = loginFormContent;
         else content = signUpFormContent;
 
