@@ -5,6 +5,7 @@ import {loginUser, logoutUser} from '../../actions/authActions';
 import {connect} from 'react-redux';
 import PropTypes from 'prop-types';
 import { ToastsContainer, ToastsStore } from 'react-toasts';
+import MapComponent from '../mappage/map.js';
 
 class Home extends React.Component {
     constructor() {
@@ -247,6 +248,7 @@ class Home extends React.Component {
         var homeContent = (
             <div className='text-center'>
                 <h1>Welcome!</h1>
+				<MapComponent />
                 <button
                     onClick={this.onLogout}
                     className='btn btn-success'
