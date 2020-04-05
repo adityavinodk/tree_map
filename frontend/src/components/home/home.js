@@ -6,6 +6,7 @@ import {connect} from 'react-redux';
 import PropTypes from 'prop-types';
 import { ToastsContainer, ToastsStore } from 'react-toasts';
 import MapComponent from '../mappage/map.js';
+import { transform } from 'ol/proj';
 
 class Home extends React.Component {
     constructor() {
@@ -15,8 +16,7 @@ class Home extends React.Component {
             password: '',
             name: '',
             isLogin: false,
-            loading: false,
-            isLoggedIn: false
+            loading: false
         }
 
         this.onLogin = this.onLogin.bind(this);
@@ -25,18 +25,12 @@ class Home extends React.Component {
         this.onLogout = this.onLogout.bind(this);
         this.logginIn = this.logginIn.bind(this);
         this.signingUp = this.signingUp.bind(this);
-        this.validateUser = this.validateUser.bind(this);
-        this.setValidationCaller = null;
-        this.callValidation = this.callValidation.bind(this);
-}
+		this.onPlant = this.onPlant.bind(this);
+    }
 
     handleChange(event) {
         event.preventDefault()
         this.setState({ [event.target.name]: event.target.value })
-    }
-
-    callValidation() {
-        this.setValidationCaller = setInterval(this.validateUser, 4000);
     }
 
     onLogin(event) {
@@ -56,10 +50,6 @@ class Home extends React.Component {
             if(res.data.success){
                 ToastsStore.success(res.data.message);
                 this.props.loginUser(res.data);
-                this.setState({
-                    isLoggedIn: true
-                })
-                setTimeout(this.callValidation, 5000);
             }
         })
         .catch(err => {
@@ -76,55 +66,39 @@ class Home extends React.Component {
     onSignUp(event) {
         event.preventDefault();
         
-        const user_details = {
-            username: this.state.username,
-            password: this.state.password,
-            location: [0,0]
-        };
+		var this1 = this;
+		
+		navigator.geolocation.getCurrentPosition(function(position){
+				var user_loc = transform([position.coords.latitude, position.coords.longitude], 'EPSG:4326','EPSG:3857');
+				alert(user_loc);
+			
+				const user_details = {
+					username: this1.state.username,
+					password: this1.state.password,
+					location: user_loc
+				};
 
-        axios.post("http://127.0.0.1:8000/api/users/signup", user_details, {
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        })
-        .then((res)=>{
-            if(res.data.success){
-                this.props.loginUser(res.data);
-                ToastsStore.success(res.data.message);
-                this.setState({
-                    isLoggedIn: true
-                })
-                setTimeout(this.callValidation, 5000);
-            }
-        })
-        .catch(err => {
-            console.log(err);
-            if(err.response.status === 409){
-                ToastsStore.error('User already exists')
-            }
-        })
+				axios.post("http://127.0.0.1:8000/api/users/signup", user_details, {
+					headers: {
+						'Content-Type': 'application/json'
+					}
+				})
+				.then((res)=>{
+					if(res.data.success){
+						this1.props.loginUser(res.data);
+						ToastsStore.success(res.data.message);
+					}
+				})
+				.catch(err => {
+					console.log(err);
+					if(err.response.status === 409){
+						ToastsStore.error('User already exists')
+					}
+				});
+			});
+		
     }
-
-    validateUser() {
-        axios.get("http://127.0.0.1:8000/api/users/validate", {
-            headers: {
-                'token': this.props.auth.token,
-                'Content-Type': 'application/json'
-            }
-        })
-        .catch(err => {
-            console.log(err);
-            this.props.logoutUser();
-            this.setState({
-                username: '',
-                password: '',
-                isLoggedIn: false
-            })
-            clearInterval(this.setValidationCaller);
-            ToastsStore.error("Token error, login again")
-        })
-    }
-
+	
     onLogout(event) {
         event.preventDefault();
 
@@ -139,16 +113,66 @@ class Home extends React.Component {
                 this.props.logoutUser();
                 this.setState({
                     username: '',
-                    password: '',
-                    isLoggedIn: false
+                    password: ''
                 })
-                clearInterval(this.setValidationCaller);
             }
         })
         .catch(err => {
             console.log(err);
         })
     }
+	
+	onPlant(event)
+	{		
+		event.preventDefault();
+		var obj1 = this;
+		
+		if(navigator.geolocation)
+		{
+			navigator.geolocation.getCurrentPosition(function(position){
+				var MercatorLocation = transform([position.coords.latitude, position.coords.longitude], 'EPSG:4326','EPSG:3857');
+				
+				//randomizing code to avoid skewed clusters
+				var xcoord = Math.random() * (8649411 - 8628627) + 8628627;
+				var ycoord = Math.random() * (1464905 - 1449195) + 1449195;
+				
+				MercatorLocation = [xcoord, ycoord];
+				//end of randomizing code; can be commented out during demo
+				
+				alert(MercatorLocation);
+				
+				var loc_json = {"location": MercatorLocation};
+				
+				axios.post('http://127.0.0.1:8000/api/tree/plant', loc_json, {
+					headers: {
+						'Content-Type': 'application/json',
+						'token': obj1.props.auth.token
+					}
+				})
+				.then(function(response){
+					console.log(response);
+					/*
+					var mapCont = document.getElementById("map");
+					
+					var marker = new Feature({
+					  geometry: new Circle(MercatorLocation, 1000)
+					});
+					
+					var vectorSource = new VectorSource({
+					  features: [marker]
+					});
+					var markerVectorLayer = new VectorLayer({
+					  source: vectorSource,
+					});
+					
+					mapCont.addLayer(markerVectorLayer);
+					
+					*/
+					//alert("Ha");
+				}).catch(err => {console.log(err)});
+			});
+		}
+	}
 
     logginIn(event){
         event.preventDefault();
@@ -171,7 +195,6 @@ class Home extends React.Component {
     render(){
         var isAuthenticated = this.props.auth.isAuthenticated;
         var isLogin = this.state.isLogin;
-        var isLoggedIn = this.state.isLoggedIn;
         var content;
 
         var loginFormContent = (
@@ -287,7 +310,11 @@ class Home extends React.Component {
         var homeContent = (
             <div className='text-center'>
                 <h1>Welcome!</h1>
+				<p>Click at a point on the map to show where you planted your tree</p>
 				<MapComponent />
+				<button
+					onClick={this.onPlant}
+				>Planted!</button>
                 <button
                     onClick={this.onLogout}
                     className='btn btn-success'
@@ -296,7 +323,7 @@ class Home extends React.Component {
             </div>
         )
 
-        if(isAuthenticated && isLoggedIn) content = homeContent;
+        if(isAuthenticated) content = homeContent;
         else if(isLogin) content = loginFormContent;
         else content = signUpFormContent;
 

@@ -72,13 +72,6 @@ class MapComponent extends React.Component {
         this.updateDimensions()
     }
     componentDidMount(){
-
-        var cstyle = new CircleStyle({
-		  radius: 5,
-		  fill: new Fill({
-			color: 'orange'
-		  })
-		});
 		
 		// Create an Openlayer Map instance with two tile layers
         const map = new Map({
@@ -129,9 +122,9 @@ class MapComponent extends React.Component {
 				//alert(clusters_list[i].centroid);
 				
 				var marker = new Feature({
-				  geometry: new Circle(fromLonLat(clusters_list[i].centroid), 20, 'XY'),  // Cordinates of New York's Town Hall
-				  style: cstyle
+				  geometry: new Circle(clusters_list[i].centroid, 2000)
 				});
+				
 				var vectorSource = new VectorSource({
 				  features: [marker]
 				});
