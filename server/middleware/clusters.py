@@ -27,7 +27,7 @@ def clusterMain(coordinates, iterations=100):
     tree_locations = {}
     for coordinate in coordinates:
         tree_locations[coordinate['id']] = coordinate['location']
-    print('Tree Coordinates - ', coordinates)
+    # print('Tree Coordinates - ', coordinates)
     for i in range(1,min(len(coordinates), 20)):
         lowest_intra_cluster_distance = inf
         for j in range(iterations):
@@ -35,7 +35,7 @@ def clusterMain(coordinates, iterations=100):
             initial_centroid_locations = random.sample(coordinate_indexes, i)
             for pos in initial_centroid_locations:
                 centroids.append(coordinates[pos]['location'])
-            print('k =', i, 'centroids', centroids)
+            # print('k =', i, 'centroids', centroids)
             new_clusters = updateCoordinates(centroids, coordinates)
             curr_intra_cluster_distance = intra_cluster_distance(new_clusters, coordinates, tree_locations)
             if curr_intra_cluster_distance < lowest_intra_cluster_distance:
@@ -44,7 +44,7 @@ def clusterMain(coordinates, iterations=100):
     
     k_values = range(1, min(len(coordinates), 20))
     kn = KneeLocator(k_values, intra_cluster_distances, curve='convex', direction='decreasing')
-    print('elbow point - ', kn.knee)
+    # print('elbow point - ', kn.knee)
 
     # plt.xlabel('number of clusters k')
     # plt.ylabel('Sum of squared distances')
@@ -95,7 +95,7 @@ def updateCoordinates(centroids, coordinates):
             if tree_clusters_list.count(i) > 0:
                 next_centroids.append(current_centroids[i])
 
-        print(previous_centroids, next_centroids)
+        # print(previous_centroids, next_centroids)
 
     new_clusters = {}
     cluster_numbers = set(tree_clusters_list)

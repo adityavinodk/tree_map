@@ -1,16 +1,13 @@
 import React from 'react';
 import axios from 'axios';
 import Grid from '@material-ui/core/Grid';
-import { ToastsContainer, ToastsStore } from 'react-toasts';
-
-// Start Openlayers imports
+// import { ToastsContainer, ToastsStore } from 'react-toasts';
 import Feature from 'ol/Feature';
 import Point from 'ol/geom/Point';
 import {fromLonLat} from 'ol/proj';
 import Circle from 'ol/geom/Circle';
 import CircleStyle from 'ol/style/Circle';
 import Fill from 'ol/style/Fill';
-
 import { 
     Map,
     View
@@ -49,13 +46,10 @@ import {
     RegularShape as RegularShapeStyle,
     Stroke as StrokeStyle
 } from 'ol/style'
-
 import { 
     Projection,
     get as getProjection
  } from 'ol/proj'
-
-// End Openlayers imports
 
 class MapComponent extends React.Component {
     constructor(props) {
@@ -99,9 +93,9 @@ class MapComponent extends React.Component {
             // Add in the following map controls
             controls: DefaultControls().extend([
                 new ZoomSlider(),
-                new MousePosition(),
-                new ScaleLine(),
-                new OverviewMap()
+                // new MousePosition(),
+                // new ScaleLine(),
+                // new OverviewMap()
             ]),
             // Render the tile layers in a map view with a Mercator projection
             view: new View({
@@ -115,25 +109,18 @@ class MapComponent extends React.Component {
 		
 		axios.get("http://127.0.0.1:8000/api/tree/clusters").then((res)=>{
 			var clusters_list = res.data.clusters;
-			//alert(clusters_list);
-			console.log(clusters_list);
 			for (var i = 0; i < clusters_list.length; i++)
 			{
-				//alert(clusters_list[i].centroid);
-				
 				var marker = new Feature({
 				  geometry: new Circle(clusters_list[i].centroid, 2000)
 				});
-				
 				var vectorSource = new VectorSource({
 				  features: [marker]
 				});
 				var markerVectorLayer = new VectorLayer({
 				  source: vectorSource,
 				});
-				
 				map.addLayer(markerVectorLayer);
-				//alert("Ha");
 			}
 		});
     }
@@ -145,6 +132,9 @@ class MapComponent extends React.Component {
             width: '70%',
             height:this.state.height,
             backgroundColor: '#cccccc',
+            display: 'block',
+            'margin-left': 'auto',
+            'margin-right': 'auto',
         }
         return (
             <Grid container>

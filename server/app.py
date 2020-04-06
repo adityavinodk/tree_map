@@ -7,6 +7,9 @@ import hashlib
 import config
 from middleware.clusters import clusterMain, getNearestCluster
 from middleware.authentication import authenticateUser, verifyUser, userDetails
+import requests as req
+import argparse
+from random import randint
 
 if 'secret.key' not in os.listdir():
     print('Secret Key file missing. Check README.md for details')
@@ -28,6 +31,43 @@ except pym.errors.ServerSelectionTimeoutError as err:
     print(err)
     print('\n----------------------------------------------------------------\nMongo not connected. Exiting app...\n----------------------------------------------------------------')
     exit()
+
+ap = argparse.ArgumentParser()
+def str2bool(v):
+    if isinstance(v, bool):
+       return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
+
+ap.add_argument("-pc", "--plant_initial_clusters", type=str2bool,
+	help="plant random clusters or not", default=False)
+ap.add_argument('-tc', '--tree_count', type=int,
+    help='number of trees to be planted randomly', default=100)
+
+arguments = vars(ap.parse_args())
+plant_initial_clusters = arguments['plant_initial_clusters']
+tree_count = arguments['tree_count']
+
+# Plant random trees to generate random clusters
+def plant_clusters(db, token):
+    global plant_initial_clusters, tree_count
+    db.trees.delete_many({})
+    if plant_initial_clusters:
+        url = "http://localhost:8000/api/tree/plant"
+        for i in range(tree_count):
+            payload = json.dumps({'location': [randint(8628627, 8649411), randint(1450195, 1464905)]})
+            headers = {
+                'token': token,
+                'Content-Type': 'application/json'
+            }
+            response = req.request("POST", url, headers=headers, data = payload)
+    
+    plant_initial_clusters = False
+    return 'Randomly planted %d trees' % (tree_count)  
 
 # Serve React App
 @app.route('/')
@@ -53,6 +93,7 @@ def validateUser():
 # Endpoint to signup user
 @app.route('/api/users/signup', methods=['POST'])
 def signup():
+    global plant_initial_clusters
     req_data = request.get_json()
     if 'username' not in req_data or 'password' not in req_data or 'location' not in req_data or len(req_data['location']) != 2:
         message = 'Error: Missing fields in request body'
@@ -69,6 +110,7 @@ def signup():
                 'password': hashed_password, 'location': req_data['location'], 'planted_trees': []}
         added_user = db.users.insert_one(data)
         token = authenticateUser(db, data['username'], data['password'], key)
+        if plant_initial_clusters: plant_clusters(db, token) 
         message = 'User successfully added'
         success = True
         return Response(json.dumps({'message': message, 'success': success, 'token': token, 'user_id': str(added_user.inserted_id)}), status=200, mimetype='application/json')
@@ -76,6 +118,7 @@ def signup():
 # Endpoint to login user
 @app.route('/api/users/login', methods=['POST'])
 def login():
+    global plant_initial_clusters
     req_data = request.get_json()
     if 'username' not in req_data or 'password' not in req_data:
         message = 'Error: Missing fields in request body'
@@ -91,6 +134,7 @@ def login():
             req_data['password'].encode()).hexdigest()
         if user_found['password'] == hashed_password:
             token = authenticateUser(db, req_data['username'], hashed_password, key)
+            if plant_initial_clusters: plant_clusters(db, token) 
             message = 'Logged in successfully'
             success = True
             return Response(json.dumps({'message': message, 'success': success, 'token': token, 'user_id': str(user_found['_id'])}), status=200, mimetype='application/json')
