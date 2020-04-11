@@ -5,6 +5,9 @@ import {loginUser, logoutUser} from '../../actions/authActions';
 import {connect} from 'react-redux';
 import PropTypes from 'prop-types';
 import { ToastsContainer, ToastsStore } from 'react-toasts';
+import MapComponent from '../mappage/map.js';
+import { transform } from 'ol/proj';
+import '../../styles/styling.css';
 
 class Home extends React.Component {
     constructor() {
@@ -23,6 +26,7 @@ class Home extends React.Component {
         this.onLogout = this.onLogout.bind(this);
         this.logginIn = this.logginIn.bind(this);
         this.signingUp = this.signingUp.bind(this);
+		this.onPlant = this.onPlant.bind(this);
     }
 
     handleChange(event) {
@@ -63,38 +67,46 @@ class Home extends React.Component {
     onSignUp(event) {
         event.preventDefault();
         
-        const user_details = {
-            username: this.state.username,
-            password: this.state.password,
-            location: [0,0]
-        };
+		var this1 = this;
+		
+		navigator.geolocation.getCurrentPosition(function(position){
+				var user_loc = transform([position.coords.latitude, position.coords.longitude], 'EPSG:4326','EPSG:3857');
+				alert(user_loc);
+			
+				const user_details = {
+					username: this1.state.username,
+					password: this1.state.password,
+					location: user_loc
+				};
 
-        axios.post("http://127.0.0.1:8000/api/users/signup", user_details, {
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        })
-        .then((res)=>{
-            if(res.data.success){
-                this.props.loginUser(res.data);
-                ToastsStore.success(res.data.message);
-            }
-        })
-        .catch(err => {
-            console.log(err);
-            if(err.response.status === 409){
-                ToastsStore.error('User already exists')
-            }
-        })
+				axios.post("http://127.0.0.1:8000/api/users/signup", user_details, {
+					headers: {
+						'Content-Type': 'application/json'
+					}
+				})
+				.then((res)=>{
+					if(res.data.success){
+						this1.props.loginUser(res.data);
+						ToastsStore.success(res.data.message);
+					}
+				})
+				.catch(err => {
+					console.log(err);
+					if(err.response.status === 409){
+						ToastsStore.error('User already exists')
+					}
+				});
+			});
+		
     }
-
+	
     onLogout(event) {
         event.preventDefault();
 
         axios.post("http://127.0.0.1:8000/api/users/logout", null, {
             headers: {
                 'Content-Type': 'application/json',
-                'token': this.props.auth.token 
+                'token': this.props.auth.token
             }
         })
         .then((res)=>{
@@ -110,6 +122,58 @@ class Home extends React.Component {
             console.log(err);
         })
     }
+	
+	onPlant(event)
+	{		
+		event.preventDefault();
+		var obj1 = this;
+		
+		if(navigator.geolocation)
+		{
+			navigator.geolocation.getCurrentPosition(function(position){
+				var MercatorLocation = transform([position.coords.latitude, position.coords.longitude], 'EPSG:4326','EPSG:3857');
+				
+				//randomizing code to avoid skewed clusters
+				var xcoord = Math.random() * (8649411 - 8628627) + 8628627;
+				var ycoord = Math.random() * (1464905 - 1449195) + 1449195;
+				
+				MercatorLocation = [xcoord, ycoord];
+				//end of randomizing code; can be commented out during demo
+				
+				//alert(MercatorLocation);
+				
+				var loc_json = {"location": MercatorLocation};
+				
+				axios.post('http://127.0.0.1:8000/api/tree/plant', loc_json, {
+					headers: {
+						'Content-Type': 'application/json',
+						'token': obj1.props.auth.token
+					}
+				})
+				.then(function(response){
+					console.log(response);
+					/*
+					var mapCont = document.getElementById("map");
+					
+					var marker = new Feature({
+					  geometry: new Circle(MercatorLocation, 1000)
+					});
+					
+					var vectorSource = new VectorSource({
+					  features: [marker]
+					});
+					var markerVectorLayer = new VectorLayer({
+					  source: vectorSource,
+					});
+					
+					mapCont.addLayer(markerVectorLayer);
+					
+					*/
+					//alert("Ha");
+				}).catch(err => {console.log(err)});
+			});
+		}
+	}
 
     logginIn(event){
         event.preventDefault();
@@ -135,121 +199,162 @@ class Home extends React.Component {
         var content;
 
         var loginFormContent = (
-            <div>
-                <div>
-                    <div className='container w-50 mb-5 display-4'>
-                        Login
-                    </div>
-                </div>
+			<div>
+				<div class="formDiv">
+					<div className="titleDiv">
+					<a className="pageTitle" href="/">
+						Treebase
+					</a>
+					</div>
+					<div class="formHeading">
+						<div className='container w-50 mb-5 display-4'>
+							Log in
+						</div>
+					</div>
+					<br/>
+					<form className='container w-50' onSubmit={this.onLogin}>
+						<div className='form-group'>
+							<div className="labelDiv">
+							<label className='form-inline'>
+								Username
+							</label>
+							</div>
+							<br/>
+							<input
+								type='text'
+								id='username'
+								className='formImput'
+								name='username'
+								value={this.state.username}
+								onChange={this.handleChange}
+								required
+							/>
+						</div>
+						<br/>
+						<div className='form-group'>
+							<div className="labelDiv">
+							<label className='form-inline'>
+								Password
+							</label>
+							</div>
+							<br/>
+							<input
+								type='text'
+								id='password'
+								className='formInput'
+								name='password'
+								value={this.state.password}
+								onChange={this.handleChange}
+								required
+							/>
+						</div>
+						<br/>
+						<br/>
+						<br/>
+						<br/>
+						<button
+							type='submit'
+							className='btn btn-success mainButton'
+							disabled={this.state.loading}
+						>Log in!</button>
 
-                <form className='container w-50' onSubmit={this.onLogin}>
-                    <div className='form-group'>
-                        <label className='form-inline'>
-                            Username
-                        </label>
-                        <input
-                            type='text'
-                            id='username'
-                            className='form-control'
-                            name='username'
-                            value={this.state.username}
-                            onChange={this.handleChange}
-                            required
-                        />
-                    </div>
-                
-                    <div className='form-group'>
-                        <label className='form-inline'>
-                            Password
-                        </label>
-                        <input
-                            type='text'
-                            id='password'
-                            className='form-control'
-                            name='password'
-                            value={this.state.password}
-                            onChange={this.handleChange}
-                            required
-                        />
-                    </div>
+						<br/><br/>
 
-                    <button
-                        type='submit'
-                        className='btn btn-success'
-                        disabled={this.state.loading}
-                    >Login</button>
-
-                    <br/><br/>
-
-                    <button
-                        onClick={this.signingUp}
-                        className='btn btn-primary'
-                    >Signup instead?</button>
-                </form>
-            </div>
+						<button
+							onClick={this.signingUp}
+							className='btn btn-primary smallButton'
+						>Signup instead?</button>
+					</form>
+				</div>
+				<MapComponent/>
+			</div>
         )
 
         var signUpFormContent = (
-            <div>
-                <div>
-                    <div className='container w-50 mb-5 display-4'>
-                        Signup
-                    </div>
-                </div>
+			<div>
+				<div className="formDiv">
+					<div className="titleDiv">
+					<a className="pageTitle" href="/">
+						Treebase
+					</a>
+					</div>
+					<div className="formHeading">
+						<div className='container w-50 mb-5 display-4'>
+							Sign up
+						</div>
+					</div>
+					<br/>
+					<form className='container w-50' onSubmit={this.onSignUp}>
+						<div className='form-group'>
+							<div className="labelDiv">
+							<label className='form-inline'>
+								Username
+							</label>
+							</div>
+							<br/>
+							<input
+								type='text'
+								id='username'
+								className='formInput'
+								name='username'
+								value={this.state.username}
+								onChange={this.handleChange}
+								required
+							/>
+						</div>
+						<br/>
+						<div className='form-group'>
+							<div className="labelDiv">
+							<label className='form-inline'>
+								Password
+							</label>
+							</div>
+							<br/>
+							<input
+								type='text'
+								id='password'
+								className='formInput'
+								name='password'
+								value={this.state.password}
+								onChange={this.handleChange}
+								required
+							/>
+						</div>
+						<br/>
+						<br/>
+						<br/>
+						<br/>
+						<button
+							type='submit'
+							className='btn btn-success mainButton'
+							disabled={this.state.loading}
+						>Sign up!</button>
+						
+						<br/><br/>
 
-                <form className='container w-50' onSubmit={this.onSignUp}>
-                    <div className='form-group'>
-                        <label className='form-inline'>
-                            Username
-                        </label>
-                        <input
-                            type='text'
-                            id='username'
-                            className='form-control'
-                            name='username'
-                            value={this.state.username}
-                            onChange={this.handleChange}
-                            required
-                        />
-                    </div>
-                
-                    <div className='form-group'>
-                        <label className='form-inline'>
-                            Password
-                        </label>
-                        <input
-                            type='text'
-                            id='password'
-                            className='form-control'
-                            name='password'
-                            value={this.state.password}
-                            onChange={this.handleChange}
-                            required
-                        />
-                    </div>
-
-                    <button
-                        type='submit'
-                        className='btn btn-success'
-                        disabled={this.state.loading}
-                    >Signup</button>
-                    
-                    <br/><br/>
-
-                    <button
-                        onClick={this.logginIn}
-                        className='btn btn-primary'
-                    >Login instead?</button>
-                </form>
-            </div>
+						<button
+							onClick={this.logginIn}
+							className='btn btn-primary smallButton'
+						>Login instead?</button>
+					</form>
+				</div>
+				<MapComponent/>
+			</div>
         )
 
         var homeContent = (
-            <div className='text-center'>
+            <div className='homeContentDiv'>
                 <h1>Welcome!</h1>
+				<p>Plant a tree at your current location</p>
+				<MapComponent/>
+				<button
+					onClick={this.onPlant}
+					className="mainButton"
+				>Planted!</button>
+				<br/>
                 <button
                     onClick={this.onLogout}
-                    className='btn btn-success'
+                    className='btn btn-success smallButton'
                     disabled={this.state.loading}
                 >Logout</button>
             </div>
@@ -260,7 +365,7 @@ class Home extends React.Component {
         else content = signUpFormContent;
 
         return (
-            <div>
+            <div id="motherDiv">
                 {content}
                 <ToastsContainer store={ToastsStore} />
             </div>

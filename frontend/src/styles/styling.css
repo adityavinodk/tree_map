@@ -1,0 +1,117 @@
+.pageTitle
+{
+	font-family: Candara;
+	font-style: italic;
+	font-weight: bold;
+	font-size: 60px;
+	color: white;
+	text-decoration-line: none;
+}
+
+.pageTitle:hover
+{
+	color: #2DDCFA;
+}
+
+.titleDiv
+{
+	padding: 25px;
+}
+
+.formDiv
+{
+	font-family: Segoe UI Light;
+	color: white;
+	height: 100vh;
+	width: 25%;
+	background-color: #3B913D;
+	text-align: center;
+}
+
+.labelDiv
+{
+	height: 25px;
+	padding: 2px;
+}
+
+.formHeading
+{
+	font-size: 40px;
+}
+
+.form-inline
+{
+	font-size: 30px;
+}
+
+#motherDiv
+{
+	height: 100%;
+	width: 100%;
+	background-color: 2DDCFA;
+}
+
+input
+{
+	font-family: Segoe UI Light;
+	font-size: 20px;
+	border: 0px solid transparent;
+	border-radius: 10px;
+	color: grey;
+	height: 40px;
+	width: 250px;
+	padding: 8px;
+}
+
+button{
+	font-family: Segoe UI Light;
+}
+
+button:focus {outline:0;}
+
+.mainButton
+{
+	border-radius: 25px;
+	background-color: transparent;
+	color: white;
+	border: 1.2px solid white;
+	width: 160px;
+	height: 80px;
+	font-size: 30px;
+}
+
+.mainButton:hover
+{
+	color: #2DDCFA;
+	border-color: #2DDCFA;
+	box-shadow: 0px 0px 8px black;
+	text-shadow: 0px 5px 5px black;
+}
+
+.smallButton
+{
+	font-family: Segoe UI Light;
+	font-size: 20px;
+	color: white;
+	background-color: transparent;
+	box-shadow: 0px 0px 0px transparent;
+	border: 0px solid transparent;
+	text-shadow: 0px 0px 0px transparent;
+}
+
+.smallButton:hover
+{
+	color: #2DDCFA;
+	text-shadow: 0px 5px 5px black;
+}
+
+input:focus {outline:0;}
+
+.homeContentDiv
+{
+	color: white;
+	height: 100vh;
+	width: 25%;
+	background-color: #3B913D;
+	text-align: center;
+}
