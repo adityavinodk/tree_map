@@ -242,10 +242,10 @@ class Home extends React.Component {
 					<br/>
 					<form onSubmit={this.onLogin}>
 						<div className='form-group'>
-							<div className="labelDiv">
-							<label className='form-inline'>
+							<div className="divDiv">
+							<div className='form-inline'>
 								Username
-							</label>
+							</div>
 							</div>
 							<br/>
 							<input
@@ -260,10 +260,10 @@ class Home extends React.Component {
 						</div>
 						<br/>
 						<div className='form-group'>
-							<div className="labelDiv">
-							<label className='form-inline'>
+							<div className="divDiv">
+							<div className='form-inline'>
 								Password
-							</label>
+							</div>
 							</div>
 							<br/>
 							<input
@@ -314,10 +314,10 @@ class Home extends React.Component {
 					<br/>
 					<form onSubmit={this.onSignUp}>
 						<div className='form-group'>
-							<div className="labelDiv">
-							<label className='form-inline'>
+							<div className="divDiv">
+							<div className='form-inline'>
 								Username
-							</label>
+							</div>
 							</div>
 							<br/>
 							<input
@@ -332,10 +332,10 @@ class Home extends React.Component {
 						</div>
 						<br/>
 						<div className='form-group'>
-							<div className="labelDiv">
-							<label className='form-inline'>
+							<div className="divDiv">
+							<div className='form-inline'>
 								Password
-							</label>
+							</div>
 							</div>
 							<br/>
 							<input

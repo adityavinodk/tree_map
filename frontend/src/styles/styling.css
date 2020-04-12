@@ -26,7 +26,7 @@
 
 .formDiv
 {
-	font-family: Segoe UI Light;
+	font-family: Verdana;
 	color: white;
 	height: 100vh;
 	width: 25%;
@@ -39,8 +39,7 @@
 
 .labelDiv
 {
-	height: 25px;
-	padding: 2px;
+	height: 20px;
 }
 
 .formHeading
@@ -50,7 +49,8 @@
 
 .form-inline
 {
-	font-size: 30px;
+	font-size: 25px;
+	text-align: center;
 }
 
 #motherDiv
@@ -62,7 +62,7 @@
 
 input
 {
-	font-family: Segoe UI Light;
+	font-family: Verdana;
 	font-size: 20px;
 	border: 0px solid transparent;
 	border-radius: 10px;
@@ -73,7 +73,7 @@ input
 }
 
 button{
-	font-family: Segoe UI Light;
+	font-family: Verdana;
 }
 
 button:focus {outline:0;}
@@ -99,7 +99,7 @@ button:focus {outline:0;}
 
 .smallButton
 {
-	font-family: Segoe UI Light;
+	font-family: Verdana;
 	font-size: 20px;
 	color: white;
 	background-color: transparent;
@@ -119,8 +119,8 @@ input:focus {outline:0;}
 .homeContentDiv
 {
 	color: white;
-	height: 100vh;
-	width: 25%;
+	height: 100%;
+	width: 100%;
 	background-color: #3B913D;
 	text-align: center;
 }

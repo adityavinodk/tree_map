@@ -123,7 +123,7 @@ class MapComponent extends React.Component {
 				//alert(clusters_list[i].centroid);
 				
 				var marker = new Feature({
-				  geometry: new Circle(clusters_list[i].centroid, 2000)
+				  geometry: new Circle(clusters_list[i].centroid, clusters_list[i].largestIntraDistance)
 				});
 				//alert("Ha");
 				
