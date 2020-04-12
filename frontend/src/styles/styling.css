@@ -8,6 +8,12 @@
 	text-decoration-line: none;
 }
 
+.wrapper
+{
+	width: 100%;
+	height: 100%;
+}
+
 .pageTitle:hover
 {
 	color: #2DDCFA;
@@ -26,6 +32,9 @@
 	width: 25%;
 	background-color: #3B913D;
 	text-align: center;
+	position: absolute;
+	left: 0px;
+	top: 0px;
 }
 
 .labelDiv
@@ -114,4 +123,8 @@ input:focus {outline:0;}
 	width: 25%;
 	background-color: #3B913D;
 	text-align: center;
+}
+
+padding{
+	
 }

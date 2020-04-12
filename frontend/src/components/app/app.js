@@ -11,8 +11,9 @@ const App = ({ children }) => (
             style={{
               overflow: 'hidden',
               display: 'block',
-              position: 'relative',
-			  height: '100%'
+              position: 'absolute',
+			  height: '100%',
+			  width: '100%'
             }}
           >
             {children}
