@@ -18,7 +18,7 @@ class Home extends React.Component {
             name: '',
             isLogin: false,
             loading: false,
-            isLoggedIn: false
+			isLoggedIn: false,
         }
         this.onLogin = this.onLogin.bind(this);
         this.onSignUp = this.onSignUp.bind(this);
@@ -30,6 +30,7 @@ class Home extends React.Component {
         this.setValidationCaller = null;
         this.callValidation = this.callValidation.bind(this);
 		this.onPlant = this.onPlant.bind(this);
+		this.MapRef = React.createRef();
     }
 
     handleChange(event) {
@@ -196,7 +197,8 @@ class Home extends React.Component {
 					// });
 					
                     // mapCont.addLayer(markerVectorLayer);
-                    ToastsStore.success('Well Done! You have planted a tree!');
+					ToastsStore.success('Well Done! You have planted a tree!');
+					onPlantState.MapRef.current.rerender();
 				}).catch(err => {console.log(err)});
 			});
 		}
@@ -223,18 +225,17 @@ class Home extends React.Component {
     render(){
         var isAuthenticated = this.props.auth.isAuthenticated;
         var isLogin = this.state.isLogin;
-        var isLoggedIn = this.state.isLoggedIn;
         var content;
 
         var loginFormContent = (
 			<div className="wrapper">
-				<div class="formDiv">
+				<div className="formDiv">
 					<div className="titleDiv">
 					<a className="pageTitle" href="/">
 						Treebase
 					</a>
 					</div>
-					<div class="formHeading">
+					<div className="formHeading">
 						<div>
 							Log in
 						</div>
@@ -294,7 +295,7 @@ class Home extends React.Component {
 						>Signup instead?</button>
 					</form>
 				</div>
-				<MapComponent/>
+				<MapComponent ref={this.MapRef}/>
 			</div>
         )
 
@@ -366,7 +367,7 @@ class Home extends React.Component {
 						>Login instead?</button>
 					</form>
 				</div>
-				<MapComponent/>
+				<MapComponent ref={this.MapRef}/>
 			</div>
         )
 
@@ -386,7 +387,7 @@ class Home extends React.Component {
 						disabled={this.state.loading}
 					>Logout</button>
 				</div>
-				<MapComponent/>
+				<MapComponent ref={this.MapRef}/>
 			</div>
         )
 

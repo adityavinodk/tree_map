@@ -6,21 +6,19 @@ import Footer from '../layout/footer';
 
 const App = ({ children }) => (
     <div className="app-wrapper">
-    
-          <main
-            style={{
-              overflow: 'hidden',
-              display: 'block',
-              position: 'absolute',
+      <main
+        style={{
+        overflow: 'hidden',
+        display: 'block',
+        position: 'absolute',
 			  height: '100%',
 			  width: '100%',
 			  left: '0px',
 			  top: '0px'
-            }}
-          >
-            {children}
-          </main>
-		  
+        }}
+      >
+        {children}
+      </main>
     </div>
   );
   

@@ -1,9 +1,6 @@
 import React from 'react';
 import axios from 'axios';
 import Grid from '@material-ui/core/Grid';
-import { ToastsContainer, ToastsStore } from 'react-toasts';
-
-// Start Openlayers imports
 import Feature from 'ol/Feature';
 import Point from 'ol/geom/Point';
 import {fromLonLat} from 'ol/proj';
@@ -52,25 +49,48 @@ import {
     Projection,
     get as getProjection
  } from 'ol/proj'
+ 
+
+var map;
+var vectorSource;
+var markerVectorLayer;
 
 class MapComponent extends React.Component {
     constructor(props) {
         super(props)
-        this.updateDimensions = this.updateDimensions.bind(this)
     }
-    updateDimensions(){
-        //const h = window.innerWidth >= 992 ? window.innerHeight : 400
-		const h = 650
-        this.setState({height: h})
-    }
-    componentWillMount(){
-        window.addEventListener('resize', this.updateDimensions)
-        this.updateDimensions()
-    }
-    componentDidMount(){
+	
+	rerender()
+	{
+		markerVectorLayer.getSource().refresh();
 		
+		axios.get("http://127.0.0.1:8000/api/tree/clusters").then((res)=>{
+			var clusters_list = res.data.clusters;
+			console.log(clusters_list);
+			
+			vectorSource = new VectorSource({
+				features: []
+				});
+			
+			for (var i = 0; i < clusters_list.length; i++)
+			{
+				var marker = new Feature({
+				  geometry: new Circle(clusters_list[i].centroid, clusters_list[i].largestIntraDistance)
+				});
+				vectorSource.addFeature(marker);
+			}
+			
+			markerVectorLayer = new VectorLayer({
+				source: vectorSource,
+			});
+			
+			map.addLayer(markerVectorLayer);
+		});
+	}
+	
+    componentDidMount(){
 		// Create an Openlayer Map instance with two tile layers
-        const map = new Map({
+		map = new Map({
             //  Display the map in the div with the id of map
             target: 'map',
             layers: [
@@ -107,39 +127,29 @@ class MapComponent extends React.Component {
             })
         })
 		
-		var centroid_array = [];
-		
 		axios.get("http://127.0.0.1:8000/api/tree/clusters").then((res)=>{
 			var clusters_list = res.data.clusters;
-			//alert(clusters_list);
 			console.log(clusters_list);
 			
-			var vectorSource = new VectorSource({
+			vectorSource = new VectorSource({
 				features: []
 				});
 			
 			for (var i = 0; i < clusters_list.length; i++)
 			{
-				//alert(clusters_list[i].centroid);
-				
 				var marker = new Feature({
 				  geometry: new Circle(clusters_list[i].centroid, clusters_list[i].largestIntraDistance)
 				});
-				//alert("Ha");
-				
 				vectorSource.addFeature(marker);
 			}
-			
-			var markerVectorLayer = new VectorLayer({
+			markerVectorLayer = new VectorLayer({
 				source: vectorSource,
 			});
-				
 			map.addLayer(markerVectorLayer);
 		});
+		
     }
-    componentWillUnmount(){
-        window.removeEventListener('resize', this.updateDimensions)
-    }
+
     render(){
         const style = {
 			position: 'absolute',
