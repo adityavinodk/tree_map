@@ -199,7 +199,7 @@ class Home extends React.Component {
         var content;
 
         var loginFormContent = (
-			<div>
+			<div className="wrapper">
 				<div class="formDiv">
 					<div className="titleDiv">
 					<a className="pageTitle" href="/">
@@ -207,12 +207,12 @@ class Home extends React.Component {
 					</a>
 					</div>
 					<div class="formHeading">
-						<div className='container w-50 mb-5 display-4'>
+						<div>
 							Log in
 						</div>
 					</div>
 					<br/>
-					<form className='container w-50' onSubmit={this.onLogin}>
+					<form onSubmit={this.onLogin}>
 						<div className='form-group'>
 							<div className="labelDiv">
 							<label className='form-inline'>
@@ -254,7 +254,7 @@ class Home extends React.Component {
 						<br/>
 						<button
 							type='submit'
-							className='btn btn-success mainButton'
+							className='mainButton'
 							disabled={this.state.loading}
 						>Log in!</button>
 
@@ -262,7 +262,7 @@ class Home extends React.Component {
 
 						<button
 							onClick={this.signingUp}
-							className='btn btn-primary smallButton'
+							className='smallButton'
 						>Signup instead?</button>
 					</form>
 				</div>
@@ -271,7 +271,7 @@ class Home extends React.Component {
         )
 
         var signUpFormContent = (
-			<div>
+			<div className="wrapper">
 				<div className="formDiv">
 					<div className="titleDiv">
 					<a className="pageTitle" href="/">
@@ -279,12 +279,12 @@ class Home extends React.Component {
 					</a>
 					</div>
 					<div className="formHeading">
-						<div className='container w-50 mb-5 display-4'>
+						<div>
 							Sign up
 						</div>
 					</div>
 					<br/>
-					<form className='container w-50' onSubmit={this.onSignUp}>
+					<form onSubmit={this.onSignUp}>
 						<div className='form-group'>
 							<div className="labelDiv">
 							<label className='form-inline'>
@@ -343,21 +343,23 @@ class Home extends React.Component {
         )
 
         var homeContent = (
-            <div className='homeContentDiv'>
-                <h1>Welcome!</h1>
-				<p>Plant a tree at your current location</p>
+			<div>
+				<div className='formDiv'>
+					<h1>Welcome!</h1>
+					<p>Plant a tree at your current location</p>
+					<button
+						onClick={this.onPlant}
+						className="mainButton"
+					>Planted!</button>
+					<br/>
+					<button
+						onClick={this.onLogout}
+						className='btn btn-success smallButton'
+						disabled={this.state.loading}
+					>Logout</button>
+				</div>
 				<MapComponent/>
-				<button
-					onClick={this.onPlant}
-					className="mainButton"
-				>Planted!</button>
-				<br/>
-                <button
-                    onClick={this.onLogout}
-                    className='btn btn-success smallButton'
-                    disabled={this.state.loading}
-                >Logout</button>
-            </div>
+			</div>
         )
 
         if(isAuthenticated) content = homeContent;
