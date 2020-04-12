@@ -13,7 +13,9 @@ const App = ({ children }) => (
               display: 'block',
               position: 'absolute',
 			  height: '100%',
-			  width: '100%'
+			  width: '100%',
+			  left: '0px',
+			  top: '0px'
             }}
           >
             {children}
