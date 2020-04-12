@@ -10,7 +10,6 @@ import {fromLonLat} from 'ol/proj';
 import Circle from 'ol/geom/Circle';
 import CircleStyle from 'ol/style/Circle';
 import Fill from 'ol/style/Fill';
-
 import { 
     Map,
     View
@@ -49,13 +48,10 @@ import {
     RegularShape as RegularShapeStyle,
     Stroke as StrokeStyle
 } from 'ol/style'
-
 import { 
     Projection,
     get as getProjection
  } from 'ol/proj'
-
-// End Openlayers imports
 
 class MapComponent extends React.Component {
     constructor(props) {

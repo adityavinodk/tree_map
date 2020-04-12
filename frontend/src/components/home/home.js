@@ -17,21 +17,28 @@ class Home extends React.Component {
             password: '',
             name: '',
             isLogin: false,
-            loading: false
+            loading: false,
+            isLoggedIn: false
         }
-
         this.onLogin = this.onLogin.bind(this);
         this.onSignUp = this.onSignUp.bind(this);
         this.handleChange = this.handleChange.bind(this);
         this.onLogout = this.onLogout.bind(this);
         this.logginIn = this.logginIn.bind(this);
         this.signingUp = this.signingUp.bind(this);
+        this.validateUser = this.validateUser.bind(this);
+        this.setValidationCaller = null;
+        this.callValidation = this.callValidation.bind(this);
 		this.onPlant = this.onPlant.bind(this);
     }
 
     handleChange(event) {
         event.preventDefault()
         this.setState({ [event.target.name]: event.target.value })
+    }
+
+    callValidation() {
+        this.setValidationCaller = setInterval(this.validateUser, 4000);
     }
 
     onLogin(event) {
@@ -51,6 +58,10 @@ class Home extends React.Component {
             if(res.data.success){
                 ToastsStore.success(res.data.message);
                 this.props.loginUser(res.data);
+                this.setState({
+                    isLoggedIn: true
+                })
+                setTimeout(this.callValidation, 5000);
             }
         })
         .catch(err => {
@@ -66,43 +77,62 @@ class Home extends React.Component {
 
     onSignUp(event) {
         event.preventDefault();
-        
-		var this1 = this;
-		
+		var onSignUpState = this;
 		navigator.geolocation.getCurrentPosition(function(position){
-				var user_loc = transform([position.coords.latitude, position.coords.longitude], 'EPSG:4326','EPSG:3857');
-				alert(user_loc);
-			
-				const user_details = {
-					username: this1.state.username,
-					password: this1.state.password,
-					location: user_loc
-				};
+            var user_loc = transform([position.coords.latitude, position.coords.longitude], 'EPSG:4326','EPSG:3857');
+        
+            const user_details = {
+                username: onSignUpState.state.username,
+                password: onSignUpState.state.password,
+                location: user_loc
+            };
 
-				axios.post("http://127.0.0.1:8000/api/users/signup", user_details, {
-					headers: {
-						'Content-Type': 'application/json'
-					}
-				})
-				.then((res)=>{
-					if(res.data.success){
-						this1.props.loginUser(res.data);
-						ToastsStore.success(res.data.message);
-					}
-				})
-				.catch(err => {
-					console.log(err);
-					if(err.response.status === 409){
-						ToastsStore.error('User already exists')
-					}
-				});
-			});
-		
+            axios.post("http://127.0.0.1:8000/api/users/signup", user_details, {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then((res)=>{
+                if(res.data.success){
+                    onSignUpState.props.loginUser(res.data);
+                    ToastsStore.success(res.data.message);
+                    onSignUpState.setState({
+                        isLoggedIn: true
+                    })
+                    setTimeout(this.callValidation, 5000);
+                }
+            })
+            .catch(err => {
+                console.log(err);
+                if(err.response.status === 409){
+                    ToastsStore.error('User already exists')
+                }
+            });
+        });
+    }
+
+    validateUser() {
+        axios.get("http://127.0.0.1:8000/api/users/validate", {
+            headers: {
+                'token': this.props.auth.token,
+                'Content-Type': 'application/json'
+            }
+        })
+        .catch(err => {
+            console.log(err);
+            this.props.logoutUser();
+            this.setState({
+                username: '',
+                password: '',
+                isLoggedIn: false
+            })
+            clearInterval(this.setValidationCaller);
+            ToastsStore.error("Token error, login again")
+        })
     }
 	
     onLogout(event) {
         event.preventDefault();
-
         axios.post("http://127.0.0.1:8000/api/users/logout", null, {
             headers: {
                 'Content-Type': 'application/json',
@@ -114,8 +144,10 @@ class Home extends React.Component {
                 this.props.logoutUser();
                 this.setState({
                     username: '',
-                    password: ''
+                    password: '',
+                    isLoggedIn: false
                 })
+                clearInterval(this.setValidationCaller);
             }
         })
         .catch(err => {
@@ -126,50 +158,45 @@ class Home extends React.Component {
 	onPlant(event)
 	{		
 		event.preventDefault();
-		var obj1 = this;
+		var onPlantState = this;
 		
 		if(navigator.geolocation)
 		{
 			navigator.geolocation.getCurrentPosition(function(position){
-				var MercatorLocation = transform([position.coords.latitude, position.coords.longitude], 'EPSG:4326','EPSG:3857');
-				
-				//randomizing code to avoid skewed clusters
-				var xcoord = Math.random() * (8649411 - 8628627) + 8628627;
-				var ycoord = Math.random() * (1464905 - 1449195) + 1449195;
-				
-				MercatorLocation = [xcoord, ycoord];
-				//end of randomizing code; can be commented out during demo
-				
-				//alert(MercatorLocation);
+                var MercatorLocation;
+
+                // Uncomment below line to take user's location
+                // MercatorLocation = transform([position.coords.latitude, position.coords.longitude], 'EPSG:4326','EPSG:3857');
+    
+                // randomizing code to avoid skewed clusters
+                // comment below line to take user location
+				MercatorLocation = [Math.random() * (8649411 - 8628627) + 8628627, Math.random() * (1464905 - 1449195) + 1449195];
 				
 				var loc_json = {"location": MercatorLocation};
 				
 				axios.post('http://127.0.0.1:8000/api/tree/plant', loc_json, {
 					headers: {
 						'Content-Type': 'application/json',
-						'token': obj1.props.auth.token
+						'token': onPlantState.props.auth.token
 					}
 				})
 				.then(function(response){
-					console.log(response);
-					/*
-					var mapCont = document.getElementById("map");
+                    // Code to add a marker where the user planted the tree
+					// var mapCont = document.getElementById("map");
 					
-					var marker = new Feature({
-					  geometry: new Circle(MercatorLocation, 1000)
-					});
+					// var marker = new Feature({
+					//   geometry: new Circle(MercatorLocation, 1000)
+					// });
 					
-					var vectorSource = new VectorSource({
-					  features: [marker]
-					});
-					var markerVectorLayer = new VectorLayer({
-					  source: vectorSource,
-					});
+					// var vectorSource = new VectorSource({
+					//   features: [marker]
+					// });
+					// var markerVectorLayer = new VectorLayer({
+					//   source: vectorSource,
+					// });
 					
-					mapCont.addLayer(markerVectorLayer);
-					
-					*/
-					//alert("Ha");
+                    // mapCont.addLayer(markerVectorLayer);
+                    ToastsStore.success('Well Done! You have planted a tree!');
 				}).catch(err => {console.log(err)});
 			});
 		}
@@ -196,6 +223,7 @@ class Home extends React.Component {
     render(){
         var isAuthenticated = this.props.auth.isAuthenticated;
         var isLogin = this.state.isLogin;
+        var isLoggedIn = this.state.isLoggedIn;
         var content;
 
         var loginFormContent = (
