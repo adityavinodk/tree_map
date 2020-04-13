@@ -253,7 +253,6 @@ def get_nearest_cluster():
         message = 'Error: Invalid token'
         success = False
         return Response(json.dumps({'message': message, 'success': success}), status=401, mimetype='application/json')
-        
     if 'location' not in req_data or len(req_data['location']) != 2:
         message = 'Error: Missing fields in request body'
         success = False
