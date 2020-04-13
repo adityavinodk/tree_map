@@ -5,6 +5,9 @@ import {loginUser, logoutUser} from '../../actions/authActions';
 import {connect} from 'react-redux';
 import PropTypes from 'prop-types';
 import { ToastsContainer, ToastsStore } from 'react-toasts';
+import MapComponent from '../mappage/map.js';
+import { transform } from 'ol/proj';
+import '../../styles/styling.css';
 
 class Home extends React.Component {
     constructor() {
@@ -14,20 +17,29 @@ class Home extends React.Component {
             password: '',
             name: '',
             isLogin: false,
-            loading: false
+            loading: false,
+			isLoggedIn: false,
         }
-
         this.onLogin = this.onLogin.bind(this);
         this.onSignUp = this.onSignUp.bind(this);
         this.handleChange = this.handleChange.bind(this);
         this.onLogout = this.onLogout.bind(this);
         this.logginIn = this.logginIn.bind(this);
         this.signingUp = this.signingUp.bind(this);
+        this.validateUser = this.validateUser.bind(this);
+        this.setValidationCaller = null;
+        this.callValidation = this.callValidation.bind(this);
+		this.onPlant = this.onPlant.bind(this);
+		this.MapRef = React.createRef();
     }
 
     handleChange(event) {
         event.preventDefault()
         this.setState({ [event.target.name]: event.target.value })
+    }
+
+    callValidation() {
+        this.setValidationCaller = setInterval(this.validateUser, 4000);
     }
 
     onLogin(event) {
@@ -47,6 +59,10 @@ class Home extends React.Component {
             if(res.data.success){
                 ToastsStore.success(res.data.message);
                 this.props.loginUser(res.data);
+                this.setState({
+                    isLoggedIn: true
+                })
+                setTimeout(this.callValidation, 5000);
             }
         })
         .catch(err => {
@@ -62,39 +78,66 @@ class Home extends React.Component {
 
     onSignUp(event) {
         event.preventDefault();
+		var onSignUpState = this;
+		navigator.geolocation.getCurrentPosition(function(position){
+            var user_loc = transform([position.coords.latitude, position.coords.longitude], 'EPSG:4326','EPSG:3857');
         
-        const user_details = {
-            username: this.state.username,
-            password: this.state.password,
-            location: [0,0]
-        };
+            const user_details = {
+                username: onSignUpState.state.username,
+                password: onSignUpState.state.password,
+                location: user_loc
+            };
 
-        axios.post("http://127.0.0.1:8000/api/users/signup", user_details, {
+            axios.post("http://127.0.0.1:8000/api/users/signup", user_details, {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then((res)=>{
+                if(res.data.success){
+                    onSignUpState.props.loginUser(res.data);
+                    ToastsStore.success(res.data.message);
+                    onSignUpState.setState({
+                        isLoggedIn: true
+                    })
+                    setTimeout(this.callValidation, 5000);
+                }
+            })
+            .catch(err => {
+                console.log(err);
+                if(err.response.status === 409){
+                    ToastsStore.error('User already exists')
+                }
+            });
+        });
+    }
+
+    validateUser() {
+        axios.get("http://127.0.0.1:8000/api/users/validate", {
             headers: {
+                'token': this.props.auth.token,
                 'Content-Type': 'application/json'
-            }
-        })
-        .then((res)=>{
-            if(res.data.success){
-                this.props.loginUser(res.data);
-                ToastsStore.success(res.data.message);
             }
         })
         .catch(err => {
             console.log(err);
-            if(err.response.status === 409){
-                ToastsStore.error('User already exists')
-            }
+            this.props.logoutUser();
+            this.setState({
+                username: '',
+                password: '',
+                isLoggedIn: false
+            })
+            clearInterval(this.setValidationCaller);
+            ToastsStore.error("Token error, login again")
         })
     }
-
+	
     onLogout(event) {
         event.preventDefault();
-
         axios.post("http://127.0.0.1:8000/api/users/logout", null, {
             headers: {
                 'Content-Type': 'application/json',
-                'token': this.props.auth.token 
+                'token': this.props.auth.token
             }
         })
         .then((res)=>{
@@ -102,14 +145,64 @@ class Home extends React.Component {
                 this.props.logoutUser();
                 this.setState({
                     username: '',
-                    password: ''
+                    password: '',
+                    isLoggedIn: false
                 })
+                clearInterval(this.setValidationCaller);
             }
         })
         .catch(err => {
             console.log(err);
         })
     }
+	
+	onPlant(event)
+	{		
+		event.preventDefault();
+		var onPlantState = this;
+		
+		if(navigator.geolocation)
+		{
+			navigator.geolocation.getCurrentPosition(function(position){
+                var MercatorLocation;
+
+                // Uncomment below line to take user's location
+                // MercatorLocation = transform([position.coords.latitude, position.coords.longitude], 'EPSG:4326','EPSG:3857');
+    
+                // randomizing code to avoid skewed clusters
+                // comment below line to take user location
+				MercatorLocation = [Math.random() * (8649411 - 8628627) + 8628627, Math.random() * (1464905 - 1449195) + 1449195];
+				
+				var loc_json = {"location": MercatorLocation};
+				
+				axios.post('http://127.0.0.1:8000/api/tree/plant', loc_json, {
+					headers: {
+						'Content-Type': 'application/json',
+						'token': onPlantState.props.auth.token
+					}
+				})
+				.then(function(response){
+                    // Code to add a marker where the user planted the tree
+					// var mapCont = document.getElementById("map");
+					
+					// var marker = new Feature({
+					//   geometry: new Circle(MercatorLocation, 1000)
+					// });
+					
+					// var vectorSource = new VectorSource({
+					//   features: [marker]
+					// });
+					// var markerVectorLayer = new VectorLayer({
+					//   source: vectorSource,
+					// });
+					
+                    // mapCont.addLayer(markerVectorLayer);
+					ToastsStore.success('Well Done! You have planted a tree!');
+					onPlantState.MapRef.current.rerender();
+				}).catch(err => {console.log(err)});
+			});
+		}
+	}
 
     logginIn(event){
         event.preventDefault();
@@ -135,124 +228,167 @@ class Home extends React.Component {
         var content;
 
         var loginFormContent = (
-            <div>
-                <div>
-                    <div className='container w-50 mb-5 display-4'>
-                        Login
-                    </div>
-                </div>
+			<div className="wrapper">
+				<div className="formDiv">
+					<div className="titleDiv">
+					<a className="pageTitle" href="/">
+						Treebase
+					</a>
+					</div>
+					<div className="formHeading">
+						<div>
+							Log in
+						</div>
+					</div>
+					<br/>
+					<form onSubmit={this.onLogin}>
+						<div className='form-group'>
+							<div className="divDiv">
+							<div className='form-inline'>
+								Username
+							</div>
+							</div>
+							<br/>
+							<input
+								type='text'
+								id='username'
+								className='formImput'
+								name='username'
+								value={this.state.username}
+								onChange={this.handleChange}
+								required
+							/>
+						</div>
+						<br/>
+						<div className='form-group'>
+							<div className="divDiv">
+							<div className='form-inline'>
+								Password
+							</div>
+							</div>
+							<br/>
+							<input
+								type='text'
+								id='password'
+								className='formInput'
+								name='password'
+								value={this.state.password}
+								onChange={this.handleChange}
+								required
+							/>
+						</div>
+						<br/>
+						<br/>
+						<br/>
+						<br/>
+						<button
+							type='submit'
+							className='mainButton'
+							disabled={this.state.loading}
+						>Log in!</button>
 
-                <form className='container w-50' onSubmit={this.onLogin}>
-                    <div className='form-group'>
-                        <label className='form-inline'>
-                            Username
-                        </label>
-                        <input
-                            type='text'
-                            id='username'
-                            className='form-control'
-                            name='username'
-                            value={this.state.username}
-                            onChange={this.handleChange}
-                            required
-                        />
-                    </div>
-                
-                    <div className='form-group'>
-                        <label className='form-inline'>
-                            Password
-                        </label>
-                        <input
-                            type='text'
-                            id='password'
-                            className='form-control'
-                            name='password'
-                            value={this.state.password}
-                            onChange={this.handleChange}
-                            required
-                        />
-                    </div>
+						<br/><br/>
 
-                    <button
-                        type='submit'
-                        className='btn btn-success'
-                        disabled={this.state.loading}
-                    >Login</button>
-
-                    <br/><br/>
-
-                    <button
-                        onClick={this.signingUp}
-                        className='btn btn-primary'
-                    >Signup instead?</button>
-                </form>
-            </div>
+						<button
+							onClick={this.signingUp}
+							className='smallButton'
+						>Signup instead?</button>
+					</form>
+				</div>
+				<MapComponent ref={this.MapRef}/>
+			</div>
         )
 
         var signUpFormContent = (
-            <div>
-                <div>
-                    <div className='container w-50 mb-5 display-4'>
-                        Signup
-                    </div>
-                </div>
+			<div className="wrapper">
+				<div className="formDiv">
+					<div className="titleDiv">
+					<a className="pageTitle" href="/">
+						Treebase
+					</a>
+					</div>
+					<div className="formHeading">
+						<div>
+							Sign up
+						</div>
+					</div>
+					<br/>
+					<form onSubmit={this.onSignUp}>
+						<div className='form-group'>
+							<div className="divDiv">
+							<div className='form-inline'>
+								Username
+							</div>
+							</div>
+							<br/>
+							<input
+								type='text'
+								id='username'
+								className='formInput'
+								name='username'
+								value={this.state.username}
+								onChange={this.handleChange}
+								required
+							/>
+						</div>
+						<br/>
+						<div className='form-group'>
+							<div className="divDiv">
+							<div className='form-inline'>
+								Password
+							</div>
+							</div>
+							<br/>
+							<input
+								type='text'
+								id='password'
+								className='formInput'
+								name='password'
+								value={this.state.password}
+								onChange={this.handleChange}
+								required
+							/>
+						</div>
+						<br/>
+						<br/>
+						<br/>
+						<br/>
+						<button
+							type='submit'
+							className='btn btn-success mainButton'
+							disabled={this.state.loading}
+						>Sign up!</button>
+						
+						<br/><br/>
 
-                <form className='container w-50' onSubmit={this.onSignUp}>
-                    <div className='form-group'>
-                        <label className='form-inline'>
-                            Username
-                        </label>
-                        <input
-                            type='text'
-                            id='username'
-                            className='form-control'
-                            name='username'
-                            value={this.state.username}
-                            onChange={this.handleChange}
-                            required
-                        />
-                    </div>
-                
-                    <div className='form-group'>
-                        <label className='form-inline'>
-                            Password
-                        </label>
-                        <input
-                            type='text'
-                            id='password'
-                            className='form-control'
-                            name='password'
-                            value={this.state.password}
-                            onChange={this.handleChange}
-                            required
-                        />
-                    </div>
-
-                    <button
-                        type='submit'
-                        className='btn btn-success'
-                        disabled={this.state.loading}
-                    >Signup</button>
-                    
-                    <br/><br/>
-
-                    <button
-                        onClick={this.logginIn}
-                        className='btn btn-primary'
-                    >Login instead?</button>
-                </form>
-            </div>
+						<button
+							onClick={this.logginIn}
+							className='btn btn-primary smallButton'
+						>Login instead?</button>
+					</form>
+				</div>
+				<MapComponent ref={this.MapRef}/>
+			</div>
         )
 
         var homeContent = (
-            <div className='text-center'>
-                <h1>Welcome!</h1>
-                <button
-                    onClick={this.onLogout}
-                    className='btn btn-success'
-                    disabled={this.state.loading}
-                >Logout</button>
-            </div>
+			<div>
+				<div className='formDiv'>
+					<h1>Welcome!</h1>
+					<p>Plant a tree at your current location</p>
+					<button
+						onClick={this.onPlant}
+						className="mainButton"
+					>Planted!</button>
+					<br/>
+					<button
+						onClick={this.onLogout}
+						className='btn btn-success smallButton'
+						disabled={this.state.loading}
+					>Logout</button>
+				</div>
+				<MapComponent ref={this.MapRef}/>
+			</div>
         )
 
         if(isAuthenticated) content = homeContent;
@@ -260,7 +396,7 @@ class Home extends React.Component {
         else content = signUpFormContent;
 
         return (
-            <div>
+            <div id="motherDiv">
                 {content}
                 <ToastsContainer store={ToastsStore} />
             </div>

@@ -30,7 +30,7 @@ $ npm run build
 
 6. Keep Mongo running and start the server in the `server` directory:
 ```sh
-$ python app.py
+$ python app.py --plant_initial_clusters=<boolean value> --tree_count=<integer value>
 ```
 
 Open the link at the server's running port in the browser
