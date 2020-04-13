@@ -18,7 +18,7 @@ class Home extends React.Component {
             name: '',
             isLogin: false,
             loading: false,
-			isLoggedIn: false,
+            isLoggedIn: false
         }
         this.onLogin = this.onLogin.bind(this);
         this.onSignUp = this.onSignUp.bind(this);
@@ -30,6 +30,7 @@ class Home extends React.Component {
         this.setValidationCaller = null;
         this.callValidation = this.callValidation.bind(this);
 		this.onPlant = this.onPlant.bind(this);
+		
 		this.MapRef = React.createRef();
     }
 
@@ -58,6 +59,7 @@ class Home extends React.Component {
         .then((res)=>{
             if(res.data.success){
                 ToastsStore.success(res.data.message);
+				console.log(res);
                 this.props.loginUser(res.data);
                 this.setState({
                     isLoggedIn: true
@@ -161,16 +163,21 @@ class Home extends React.Component {
 		event.preventDefault();
 		var onPlantState = this;
 		
+		//this.renderMap();
+		
 		if(navigator.geolocation)
 		{
 			navigator.geolocation.getCurrentPosition(function(position){
                 var MercatorLocation;
 
                 // Uncomment below line to take user's location
-                // MercatorLocation = transform([position.coords.latitude, position.coords.longitude], 'EPSG:4326','EPSG:3857');
+                MercatorLocation = transform([position.coords.latitude, position.coords.longitude], 'EPSG:4326','EPSG:3857');
     
                 // randomizing code to avoid skewed clusters
                 // comment below line to take user location
+				
+				//alert(MercatorLocation);
+				
 				MercatorLocation = [Math.random() * (8649411 - 8628627) + 8628627, Math.random() * (1464905 - 1449195) + 1449195];
 				
 				var loc_json = {"location": MercatorLocation};
@@ -182,23 +189,16 @@ class Home extends React.Component {
 					}
 				})
 				.then(function(response){
-                    // Code to add a marker where the user planted the tree
-					// var mapCont = document.getElementById("map");
+                    
+					console.log(response);
+					//onPlantState.MapRef.current.setState({flag: onPlantState.MapRef.current.flag + 1});
 					
-					// var marker = new Feature({
-					//   geometry: new Circle(MercatorLocation, 1000)
-					// });
+					//alert("Hoola");
 					
-					// var vectorSource = new VectorSource({
-					//   features: [marker]
-					// });
-					// var markerVectorLayer = new VectorLayer({
-					//   source: vectorSource,
-					// });
-					
-                    // mapCont.addLayer(markerVectorLayer);
-					ToastsStore.success('Well Done! You have planted a tree!');
+					console.log(loc_json);
 					onPlantState.MapRef.current.rerender();
+					ToastsStore.success('Well Done! You have planted a tree!');
+					
 				}).catch(err => {console.log(err)});
 			});
 		}
@@ -225,6 +225,7 @@ class Home extends React.Component {
     render(){
         var isAuthenticated = this.props.auth.isAuthenticated;
         var isLogin = this.state.isLogin;
+        var isLoggedIn = this.state.isLoggedIn;
         var content;
 
         var loginFormContent = (
@@ -232,8 +233,10 @@ class Home extends React.Component {
 				<div className="formDiv">
 					<div className="titleDiv">
 					<a className="pageTitle" href="/">
-						Treebase
+						TREEBASE
 					</a>
+					<br/>
+					<br/>
 					</div>
 					<div className="formHeading">
 						<div>
@@ -241,12 +244,12 @@ class Home extends React.Component {
 						</div>
 					</div>
 					<br/>
+					<br/>
+					<br/>
 					<form onSubmit={this.onLogin}>
 						<div className='form-group'>
 							<div className="divDiv">
-							<div className='form-inline'>
 								Username
-							</div>
 							</div>
 							<br/>
 							<input
@@ -260,11 +263,10 @@ class Home extends React.Component {
 							/>
 						</div>
 						<br/>
+						<br/>
 						<div className='form-group'>
 							<div className="divDiv">
-							<div className='form-inline'>
 								Password
-							</div>
 							</div>
 							<br/>
 							<input
@@ -277,7 +279,6 @@ class Home extends React.Component {
 								required
 							/>
 						</div>
-						<br/>
 						<br/>
 						<br/>
 						<br/>
@@ -304,21 +305,23 @@ class Home extends React.Component {
 				<div className="formDiv">
 					<div className="titleDiv">
 					<a className="pageTitle" href="/">
-						Treebase
+						TREEBASE
 					</a>
 					</div>
+					<br/>
 					<div className="formHeading">
 						<div>
 							Sign up
 						</div>
 					</div>
 					<br/>
+					<br/>
+					<br/>
+					<br/>
 					<form onSubmit={this.onSignUp}>
 						<div className='form-group'>
 							<div className="divDiv">
-							<div className='form-inline'>
 								Username
-							</div>
 							</div>
 							<br/>
 							<input
@@ -332,11 +335,10 @@ class Home extends React.Component {
 							/>
 						</div>
 						<br/>
+						<br/>
 						<div className='form-group'>
 							<div className="divDiv">
-							<div className='form-inline'>
 								Password
-							</div>
 							</div>
 							<br/>
 							<input
@@ -370,6 +372,15 @@ class Home extends React.Component {
 				<MapComponent ref={this.MapRef}/>
 			</div>
         )
+		
+		const style = {
+			position: 'absolute',
+			top: '0px',
+			left: '25%',
+            width: '75%',
+            height: '100%',
+            backgroundColor: '#cccccc',
+        }
 
         var homeContent = (
 			<div>
@@ -391,12 +402,18 @@ class Home extends React.Component {
 			</div>
         )
 
-        if(isAuthenticated) content = homeContent;
-        else if(isLogin) content = loginFormContent;
-        else content = signUpFormContent;
+        if(isAuthenticated) {content = homeContent;}
+        else if(isLogin) {content = loginFormContent;}
+        else {content = signUpFormContent;}
 
         return (
             <div id="motherDiv">
+				<link href="https://fonts.googleapis.com/css2?family=Space+Mono&display=swap" rel="stylesheet"></link>
+				<link href="https://fonts.googleapis.com/css2?family=Scope+One&display=swap" rel="stylesheet"></link>
+				<link href="https://fonts.googleapis.com/css2?family=Comfortaa&display=swap" rel="stylesheet"></link>
+				<link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet"></link>
+				<link href="https://fonts.googleapis.com/css2?family=Montserrat&display=swap" rel="stylesheet"></link>
+				<link href="https://fonts.googleapis.com/css2?family=Lato&display=swap" rel="stylesheet"></link>
                 {content}
                 <ToastsContainer store={ToastsStore} />
             </div>

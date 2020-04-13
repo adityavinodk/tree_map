@@ -39,17 +39,13 @@
 .divDiv
 {
 	height: 15px;
+	font-size: 25px;
+	text-align: center;
 }
 
 .formHeading
 {
 	font-size: 35px;
-}
-
-.form-inline
-{
-	font-size: 25px;
-	text-align: center;
 }
 
 #motherDiv
