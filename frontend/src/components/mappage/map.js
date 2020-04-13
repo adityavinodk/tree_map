@@ -2,7 +2,6 @@ import React from 'react';
 import axios from 'axios';
 import Grid from '@material-ui/core/Grid';
 import { ToastsContainer, ToastsStore } from 'react-toasts';
-import $ from 'jquery';
 
 // Start Openlayers imports
 import Feature from 'ol/Feature';

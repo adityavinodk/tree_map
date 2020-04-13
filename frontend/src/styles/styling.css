@@ -151,6 +151,19 @@ button:focus {outline:0;}
 	color: #87FBA6;
 }
 
+#homeContent
+{
+	font-size: 30px;
+	text-align: left;
+	color: #87FBA6;	
+}
+
+.Field
+{
+	font-size: 20px;
+	text-align: center;
+}
+
 #welcome
 {
 	font-size: 45px;

@@ -19,6 +19,7 @@ class Home extends React.Component {
             isLogin: false,
             loading: false,
 			isLoggedIn: false,
+			tree_count: 0
         }
         this.onLogin = this.onLogin.bind(this);
         this.onSignUp = this.onSignUp.bind(this);
@@ -31,6 +32,7 @@ class Home extends React.Component {
         this.callValidation = this.callValidation.bind(this);
 		this.onPlant = this.onPlant.bind(this);
 		this.MapRef = React.createRef();
+		this.getTreeCount = this.getTreeCount.bind(this);
     }
 
     handleChange(event) {
@@ -62,7 +64,8 @@ class Home extends React.Component {
                 this.setState({
                     isLoggedIn: true
                 })
-                setTimeout(this.callValidation, 5000);
+				setTimeout(this.callValidation, 5000);
+				this.getTreeCount()
             }
         })
         .catch(err => {
@@ -100,7 +103,8 @@ class Home extends React.Component {
                     onSignUpState.setState({
                         isLoggedIn: true
                     })
-                    setTimeout(this.callValidation, 5000);
+					setTimeout(this.callValidation, 5000);
+					this.getTreeCount()
                 }
             })
             .catch(err => {
@@ -113,12 +117,15 @@ class Home extends React.Component {
     }
 
     validateUser() {
+		var onPlantState = this
         axios.get("http://127.0.0.1:8000/api/users/validate", {
             headers: {
                 'token': this.props.auth.token,
                 'Content-Type': 'application/json'
             }
-        })
+        }).then(function(res){
+			onPlantState.getTreeCount()	
+		})
         .catch(err => {
             console.log(err);
             this.props.logoutUser();
@@ -199,9 +206,24 @@ class Home extends React.Component {
                     // mapCont.addLayer(markerVectorLayer);
 					ToastsStore.success('Well Done! You have planted a tree!');
 					onPlantState.MapRef.current.rerender();
+					this.getTreeCount()
 				}).catch(err => {console.log(err)});
 			});
 		}
+	}
+	
+	getTreeCount(){
+		var onPlantState = this
+		return axios.get('http://127.0.0.1:8000/api/tree/getPlantedTrees', {
+			headers: {
+				'Content-Type': 'application/json',
+				'token': this.props.auth.token
+			}
+		}).then(function(res){
+			onPlantState.setState({ 
+				tree_count: res.data.planted_trees.length 
+			})
+		})
 	}
 
     logginIn(event){
@@ -224,7 +246,8 @@ class Home extends React.Component {
 
     render(){
         var isAuthenticated = this.props.auth.isAuthenticated;
-        var isLogin = this.state.isLogin;
+		var isLogin = this.state.isLogin;
+		var tree_count = this.state.tree_count;
         var content;
 
         var loginFormContent = (
@@ -245,7 +268,7 @@ class Home extends React.Component {
 					<form onSubmit={this.onLogin}>
 						<div className='form-group'>
 							<div className="divDiv">
-							<div className='form-inline'>
+							<div className='Field'>
 								Username
 							</div>
 							</div>
@@ -263,7 +286,7 @@ class Home extends React.Component {
 						<br/>
 						<div className='form-group'>
 							<div className="divDiv">
-							<div className='form-inline'>
+							<div className='Field'>
 								Password
 							</div>
 							</div>
@@ -318,7 +341,7 @@ class Home extends React.Component {
 					<form onSubmit={this.onSignUp}>
 						<div className='form-group'>
 							<div className="divDiv">
-							<div className='form-inline'>
+							<div className='Field'>
 								Username
 							</div>
 							</div>
@@ -336,7 +359,7 @@ class Home extends React.Component {
 						<br/>
 						<div className='form-group'>
 							<div className="divDiv">
-							<div className='form-inline'>
+							<div className='Field'>
 								Password
 							</div>
 							</div>
@@ -377,14 +400,16 @@ class Home extends React.Component {
 			<div>
 				<div className='formDiv'>
 					<h1 id="welcome">Welcome!</h1>
-					<div id="flrText">You're almost ready to plant your tree. Just press the button and add a tree to the map!</div>
+					<br /><br />
+					<div id="homeContent">You're almost ready to plant your tree. Just press the button and add a tree to the map!</div>
 					<br/>
 					<button
 						onClick={this.onPlant}
 						id="PlantedButton"
 					>Planted!</button>
-					<br/>
-					<br/>
+					<br/><br/>
+					{tree_count ? <div id="homeContent">You have planted {tree_count} trees!</div>: <div id="homeContent">You have planted no trees.</div>}
+					<br/><br/>
 					<button
 						onClick={this.onLogout}
 						className='btn btn-success smallButton'
