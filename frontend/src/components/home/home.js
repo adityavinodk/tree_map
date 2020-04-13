@@ -232,7 +232,7 @@ class Home extends React.Component {
 				<div className="formDiv">
 					<div className="titleDiv">
 					<a className="pageTitle" href="/">
-						Treebase
+						TREEBASE
 					</a>
 					</div>
 					<div className="formHeading">
@@ -240,6 +240,7 @@ class Home extends React.Component {
 							Log in
 						</div>
 					</div>
+					<br/>
 					<br/>
 					<form onSubmit={this.onLogin}>
 						<div className='form-group'>
@@ -304,7 +305,7 @@ class Home extends React.Component {
 				<div className="formDiv">
 					<div className="titleDiv">
 					<a className="pageTitle" href="/">
-						Treebase
+						TREEBASE
 					</a>
 					</div>
 					<div className="formHeading">
@@ -312,6 +313,7 @@ class Home extends React.Component {
 							Sign up
 						</div>
 					</div>
+					<br/>
 					<br/>
 					<form onSubmit={this.onSignUp}>
 						<div className='form-group'>
@@ -374,12 +376,14 @@ class Home extends React.Component {
         var homeContent = (
 			<div>
 				<div className='formDiv'>
-					<h1>Welcome!</h1>
-					<p>Plant a tree at your current location</p>
+					<h1 id="welcome">Welcome!</h1>
+					<div id="flrText">You're almost ready to plant your tree. Just press the button and add a tree to the map!</div>
+					<br/>
 					<button
 						onClick={this.onPlant}
-						className="mainButton"
+						id="PlantedButton"
 					>Planted!</button>
+					<br/>
 					<br/>
 					<button
 						onClick={this.onLogout}
@@ -398,6 +402,8 @@ class Home extends React.Component {
         return (
             <div id="motherDiv">
                 {content}
+				<link href="https://fonts.googleapis.com/css2?family=Anton&display=swap" rel="stylesheet"></link>
+				<link href="https://fonts.googleapis.com/css2?family=Lato&display=swap" rel="stylesheet"></link>
                 <ToastsContainer store={ToastsStore} />
             </div>
         )

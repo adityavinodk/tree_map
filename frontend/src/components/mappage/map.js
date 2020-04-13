@@ -1,6 +1,10 @@
 import React from 'react';
 import axios from 'axios';
 import Grid from '@material-ui/core/Grid';
+import { ToastsContainer, ToastsStore } from 'react-toasts';
+import $ from 'jquery';
+
+// Start Openlayers imports
 import Feature from 'ol/Feature';
 import Point from 'ol/geom/Point';
 import {fromLonLat} from 'ol/proj';
@@ -58,6 +62,9 @@ var markerVectorLayer;
 class MapComponent extends React.Component {
     constructor(props) {
         super(props)
+        this.updateDimensions = this.updateDimensions.bind(this)
+		
+		this.state = {'flag': '0'};
     }
 	
 	rerender()
@@ -66,6 +73,7 @@ class MapComponent extends React.Component {
 		
 		axios.get("http://127.0.0.1:8000/api/tree/clusters").then((res)=>{
 			var clusters_list = res.data.clusters;
+			//alert(clusters_list);
 			console.log(clusters_list);
 			
 			vectorSource = new VectorSource({
@@ -74,9 +82,13 @@ class MapComponent extends React.Component {
 			
 			for (var i = 0; i < clusters_list.length; i++)
 			{
+				//alert(clusters_list[i].centroid);
+				
 				var marker = new Feature({
 				  geometry: new Circle(clusters_list[i].centroid, clusters_list[i].largestIntraDistance)
 				});
+				//alert("Ha");
+				
 				vectorSource.addFeature(marker);
 			}
 			
@@ -88,8 +100,18 @@ class MapComponent extends React.Component {
 		});
 	}
 	
+    updateDimensions(){
+        //const h = window.innerWidth >= 992 ? window.innerHeight : 400
+		const h = 650
+        this.setState({height: h})
+    }
+    componentWillMount(){
+        window.addEventListener('resize', this.updateDimensions)
+        this.updateDimensions()
+    }
     componentDidMount(){
 		// Create an Openlayer Map instance with two tile layers
+        
 		map = new Map({
             //  Display the map in the div with the id of map
             target: 'map',
@@ -127,8 +149,11 @@ class MapComponent extends React.Component {
             })
         })
 		
+		var centroid_array = [];
+		
 		axios.get("http://127.0.0.1:8000/api/tree/clusters").then((res)=>{
 			var clusters_list = res.data.clusters;
+			//alert(clusters_list);
 			console.log(clusters_list);
 			
 			vectorSource = new VectorSource({
@@ -137,19 +162,27 @@ class MapComponent extends React.Component {
 			
 			for (var i = 0; i < clusters_list.length; i++)
 			{
+				//alert(clusters_list[i].centroid);
+				
 				var marker = new Feature({
 				  geometry: new Circle(clusters_list[i].centroid, clusters_list[i].largestIntraDistance)
 				});
+				//alert("Ha");
+				
 				vectorSource.addFeature(marker);
 			}
+			
 			markerVectorLayer = new VectorLayer({
 				source: vectorSource,
 			});
+			
 			map.addLayer(markerVectorLayer);
 		});
 		
     }
-
+    componentWillUnmount(){
+        window.removeEventListener('resize', this.updateDimensions)
+    }
     render(){
         const style = {
 			position: 'absolute',
