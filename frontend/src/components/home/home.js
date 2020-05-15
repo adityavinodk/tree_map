@@ -42,7 +42,12 @@ class Home extends React.Component {
 
     callValidation() {
         this.setValidationCaller = setInterval(this.validateUser, 4000);
-    }
+	}
+	
+	componentDidMount() {
+		setTimeout(this.callValidation, 5000);
+		this.getTreeCount()	
+	}
 
     onLogin(event) {
         event.preventDefault();
@@ -118,25 +123,27 @@ class Home extends React.Component {
 
     validateUser() {
 		var onPlantState = this
-        axios.get("http://127.0.0.1:8000/api/users/validate", {
-            headers: {
-                'token': this.props.auth.token,
-                'Content-Type': 'application/json'
-            }
-        }).then(function(res){
-			onPlantState.getTreeCount()	
-		})
-        .catch(err => {
-            console.log(err);
-            this.props.logoutUser();
-            this.setState({
-                username: '',
-                password: '',
-                isLoggedIn: false
-            })
-            clearInterval(this.setValidationCaller);
-            ToastsStore.error("Token error, login again")
-        })
+		if(this.props.auth.token){
+			axios.get("http://127.0.0.1:8000/api/users/validate", {
+				headers: {
+					'token': this.props.auth.token,
+					'Content-Type': 'application/json'
+				}
+			}).then(function(res){
+				onPlantState.getTreeCount()	
+			})
+			.catch(err => {
+				console.log(err);
+				this.props.logoutUser();
+				this.setState({
+					username: '',
+					password: '',
+					isLoggedIn: false
+				})
+				clearInterval(this.setValidationCaller);
+				ToastsStore.error("Token error, login again")
+			})
+		}
     }
 	
     onLogout(event) {
@@ -159,7 +166,8 @@ class Home extends React.Component {
             }
         })
         .catch(err => {
-            console.log(err);
+			console.log(err);
+			this.props.logoutUser();
         })
     }
 	
@@ -214,16 +222,18 @@ class Home extends React.Component {
 	
 	getTreeCount(){
 		var onPlantState = this
-		return axios.get('http://127.0.0.1:8000/api/tree/getPlantedTrees', {
-			headers: {
-				'Content-Type': 'application/json',
-				'token': this.props.auth.token
-			}
-		}).then(function(res){
-			onPlantState.setState({ 
-				tree_count: res.data.planted_trees.length 
+		if(this.props.auth.token){
+			return axios.get('http://127.0.0.1:8000/api/tree/getPlantedTrees', {
+				headers: {
+					'Content-Type': 'application/json',
+					'token': this.props.auth.token
+				}
+			}).then(function(res){
+				onPlantState.setState({ 
+					tree_count: res.data.planted_trees.length 
+				})
 			})
-		})
+		}
 	}
 
     logginIn(event){
@@ -308,6 +318,7 @@ class Home extends React.Component {
 						<button
 							type='submit'
 							className='mainButton'
+							name='Log In'
 							disabled={this.state.loading}
 						>Log in!</button>
 
@@ -315,6 +326,7 @@ class Home extends React.Component {
 
 						<button
 							onClick={this.signingUp}
+							name='Signup Button'
 							className='smallButton'
 						>Signup instead?</button>
 					</form>
@@ -380,6 +392,7 @@ class Home extends React.Component {
 						<br/>
 						<button
 							type='submit'
+							name='Sign Up'
 							className='btn btn-success mainButton'
 							disabled={this.state.loading}
 						>Sign up!</button>
@@ -388,6 +401,7 @@ class Home extends React.Component {
 
 						<button
 							onClick={this.logginIn}
+							name='Login Button'
 							className='btn btn-primary smallButton'
 						>Login instead?</button>
 					</form>
@@ -405,13 +419,15 @@ class Home extends React.Component {
 					<br/>
 					<button
 						onClick={this.onPlant}
+						name='Plant Tree'
 						id="PlantedButton"
-					>Planted!</button>
+					>Plant a Tree!</button>
 					<br/><br/>
-					{tree_count ? <div id="homeContent">You have planted {tree_count} trees!</div>: <div id="homeContent">You have planted no trees.</div>}
+					{tree_count ? <div id="homeContent">You have planted <span id='tree_count'>{tree_count}</span> trees!</div>: null}
 					<br/><br/>
 					<button
 						onClick={this.onLogout}
+						name='Logout Button'
 						className='btn btn-success smallButton'
 						disabled={this.state.loading}
 					>Logout</button>

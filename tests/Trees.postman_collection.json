@@ -1,0 +1,385 @@
+{
+	"info": {
+		"_postman_id": "031e8a11-de13-4d6e-8141-0de24cd7cbe4",
+		"name": "Trees",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Signup",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "01579353-3501-437c-be0b-b78ea14e6f95",
+						"exec": [
+							"pm.test(\"Successful POST request\", function () {",
+							"    pm.expect(pm.response.code).to.be.oneOf([200]);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "4784d49d-df73-4ea6-abbd-d00689d4c7d5",
+						"exec": [
+							"var location_x = parseInt(Math.random() * (8649411 - 8628627) + 8628627);",
+							"var location_y = parseInt(Math.random() * (1464905 - 1449195) + 1449195);",
+							"pm.globals.set(\"locationX\", location_x);",
+							"pm.globals.set(\"locationY\", location_y);",
+							"",
+							"var username = Math.random().toString(36).substring(7);",
+							"var password = Math.random().toString(36).substring(10);",
+							"pm.globals.set(\"username\", username);",
+							"pm.globals.set(\"password\", password);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"username\": \"{{username}}\",\n\t\"password\": \"{{password}}\",\n\t\"location\": [{{locationX}}, {{locationY}}]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8000/api/users/signup",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"users",
+						"signup"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "b33b2553-2e8e-453e-bfdb-5f84ccba658f",
+						"exec": [
+							"const res = pm.response.json();",
+							"pm.globals.set(\"token\", res.token);",
+							"",
+							"pm.test(\"Successful POST request\", function () {",
+							"    pm.expect(pm.response.code).to.be.oneOf([200]);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"username\": \"athu\",\n\t\"password\": \"athu123\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8000/api/users/login",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"users",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Clusters",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "41d77c23-ecb4-47da-b6ac-b4c29e1403d8",
+						"exec": [
+							"pm.test(\"Successful POST request\", function () {",
+							"    pm.expect(pm.response.code).to.be.oneOf([200]);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8000/api/tree/clusters",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"tree",
+						"clusters"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Plant Tree",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "71c21343-0ed5-453b-a4f5-094db047040b",
+						"exec": [
+							"pm.test(\"Successful POST request\", function () {",
+							"    pm.expect(pm.response.code).to.be.oneOf([200]);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "870fd247-6e2c-4ead-b7aa-461c0d83e982",
+						"exec": [
+							"var location_x = parseInt(Math.random() * (8649411 - 8628627) + 8628627);",
+							"var location_y = parseInt(Math.random() * (1464905 - 1449195) + 1449195);",
+							"pm.globals.set(\"locationX\", location_x);",
+							"pm.globals.set(\"locationY\", location_y);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "token",
+						"value": "{{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"location\": [{{locationX}}, {{locationY}}]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8000/api/tree/plant",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"tree",
+						"plant"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Planted Trees",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "240e1062-0ff2-477e-b1ef-356b55ac3e25",
+						"exec": [
+							"pm.test(\"Successful POST request\", function () {",
+							"    pm.expect(pm.response.code).to.be.oneOf([200]);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "token",
+						"value": "{{token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "localhost:8000/api/tree/getPlantedTrees",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"tree",
+						"getPlantedTrees"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Nearest Cluster",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "2b8a343f-37dd-4f74-937e-ca447ea8b84f",
+						"exec": [
+							"pm.test(\"Successful POST request\", function () {",
+							"    pm.expect(pm.response.code).to.be.oneOf([200]);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "token",
+						"value": "{{token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"location\": [5444, 6320]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8000/api/tree/getNearestCluster",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"tree",
+						"getNearestCluster"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Validate User",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "660c2a0f-48a6-4350-b2eb-0b48a44761ce",
+						"exec": [
+							"pm.test(\"Successful POST request\", function () {",
+							"    pm.expect(pm.response.code).to.be.oneOf([200]);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "token",
+						"value": "{{token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "localhost:8000/api/users/validate",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"users",
+						"validate"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Logout",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "2715d731-3b23-43c2-b10a-9a232d35f55b",
+						"exec": [
+							"pm.test(\"Successful POST request\", function () {",
+							"    pm.expect(pm.response.code).to.be.oneOf([200]);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "token",
+						"value": "{{token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "localhost:8000/api/users/logout",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"users",
+						"logout"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"protocolProfileBehavior": {}
+}
