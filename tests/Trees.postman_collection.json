@@ -278,7 +278,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n\t\"location\": [5444, 6320]\n}",
+					"raw": "",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -286,7 +286,7 @@
 					}
 				},
 				"url": {
-					"raw": "localhost:8000/api/tree/getNearestCluster",
+					"raw": "localhost:8000/api/tree/getNearestCluster?X=5444&Y=6320",
 					"host": [
 						"localhost"
 					],
@@ -295,6 +295,16 @@
 						"api",
 						"tree",
 						"getNearestCluster"
+					],
+					"query": [
+						{
+							"key": "X",
+							"value": "5444"
+						},
+						{
+							"key": "Y",
+							"value": "6320"
+						}
 					]
 				}
 			},

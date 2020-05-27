@@ -243,6 +243,7 @@ def create_clusters():
 @app.route('/api/tree/getNearestCluster', methods=['GET'])
 def get_nearest_cluster():
     req_data = request.get_json()
+    args = request.args
     if 'token' not in request.headers:
         message = 'Error: Missing header token'
         success = False
@@ -253,7 +254,7 @@ def get_nearest_cluster():
         message = 'Error: Invalid token'
         success = False
         return Response(json.dumps({'message': message, 'success': success}), status=401, mimetype='application/json')
-    if 'location' not in req_data or len(req_data['location']) != 2:
+    if 'X' not in args or 'Y' not in args:
         message = 'Error: Missing fields in request body'
         success = False
         return Response(json.dumps({'message': message, 'success': success}), status=400, mimetype='application/json')
@@ -266,11 +267,12 @@ def get_nearest_cluster():
         success = False
         message = 'No clusters found.'
         return Response(json.dumps({'message': message, 'success': success}), status=204, mimetype='application/json')
-    nearest_cluster_id = getNearestCluster(clusters_dict, req_data['location'])
+    input_location = [int(args.get('X')), int(args.get('Y'))]
+    nearest_cluster_id = getNearestCluster(clusters_dict, input_location)
     nearest_cluster = {'id': nearest_cluster_id,
                        'centroid': clusters_dict[nearest_cluster_id]['centroid'], 'trees': clusters_dict[nearest_cluster_id]['trees']}
     success = True
-    message = 'Nearest Cluster succesffully found'
+    message = 'Nearest Cluster succesfully found'
     return Response(json.dumps({'message': message, 'success': success, 'nearest_cluster': nearest_cluster}), status=200, mimetype='application/json')
 
 if __name__ == "__main__":
