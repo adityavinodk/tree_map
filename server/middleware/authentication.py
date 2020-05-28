@@ -20,6 +20,10 @@ def verifyUser(db, token, key):
             verified = True
     except jwt.exceptions.InvalidSignatureError:
         verified = False
+    except jwt.DecodeError:
+        verified = False
+    except jwt.InvalidTokenError:
+        verified = False
     except jwt.ExpiredSignatureError:
         verified = False
         if db.usersessions.find_one({'token': token}) != None:
