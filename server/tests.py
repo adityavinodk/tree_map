@@ -87,7 +87,6 @@ class BasicTests(unittest.TestCase):
      # API is a POST method needing a token and a location
      # Test sends both, but the token is invalid
      # Expected response is 401
-    '''
     def test_plant_invalid_token(self):
         with app.test_client() as client:
             # send data as POST form to endpoint
@@ -108,7 +107,6 @@ class BasicTests(unittest.TestCase):
             self.assertEqual(
                 response.status_code, 401
             )
-    '''
     
     # TEST 4
     # Plant a tree, proper
@@ -189,7 +187,6 @@ class BasicTests(unittest.TestCase):
     # API is a GET method needing a token
     # Test doesn't send a valid token
     # Expected response is 401
-    '''
     def test_get_planted_trees_invalid_token(self):
         with app.test_client() as client:
             requestData = {
@@ -211,7 +208,6 @@ class BasicTests(unittest.TestCase):
             self.assertEqual(
                 response.status_code, 401
             )
-    '''
     
     # TEST 9
     # Get nearest cluster
@@ -238,7 +234,6 @@ class BasicTests(unittest.TestCase):
     # API is a GET method needing a token and location
     # Test doesn't send a valid token
     # Expected response is 401
-    '''
     def test_get_nearest_invalid_token(self):
         with app.test_client() as client:
             requestData = {
@@ -259,7 +254,6 @@ class BasicTests(unittest.TestCase):
             self.assertEqual(
                 response.status_code, 401
             )
-    '''
 
     # TEST 11
     # Get nearest cluster
