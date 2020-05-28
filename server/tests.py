@@ -65,6 +65,7 @@ class BasicTests(unittest.TestCase):
             self.assertEqual(
                 response.status_code, 400
             )
+            print("\nSUCCESSFUL: test_plant_without_token passed with response code 400")
     
     # TEST 2
     # Plant a tree without a location
@@ -81,6 +82,7 @@ class BasicTests(unittest.TestCase):
             self.assertEqual(
                 response.status_code, 400
             )
+            print("\nSUCCESSFUL: test_plant_without_location passed with response code 400")
 
      # TEST 3
      # Plant a tree with an invalid token
@@ -107,6 +109,7 @@ class BasicTests(unittest.TestCase):
             self.assertEqual(
                 response.status_code, 401
             )
+            print("\nSUCCESSFUL: test_plant_invalid_token passed with response code 401")
     
     # TEST 4
     # Plant a tree, proper
@@ -127,6 +130,7 @@ class BasicTests(unittest.TestCase):
             self.assertEqual(
                 response.status_code, 200
             )
+            print("\nSUCCESSFUL: test_plant passed with response code 200")
 
     # TEST 5
     # Get all planted trees
@@ -146,6 +150,7 @@ class BasicTests(unittest.TestCase):
             self.assertEqual(
                 response.status_code, 200
             )
+            print("\nSUCCESSFUL: test_get_planted_trees passed with response code 200")
     
     # TEST 6
     # Get all planted trees
@@ -166,6 +171,7 @@ class BasicTests(unittest.TestCase):
             self.assertEqual(
                 response.status_code, 405
             )
+            print("\nSUCCESSFUL: test_get_planted_trees_with_post passed with response code 405")
     
     # TEST 7
     # Get all planted trees
@@ -181,6 +187,7 @@ class BasicTests(unittest.TestCase):
             self.assertEqual(
                 response.status_code, 400
             )
+            print("\nSUCCESSFUL: test_get_planted_trees_without_token passed with response code 400")
     
     # TEST 8
     # Get all planted trees
@@ -208,6 +215,7 @@ class BasicTests(unittest.TestCase):
             self.assertEqual(
                 response.status_code, 401
             )
+            print("\nSUCCESSFUL: test_get_planted_trees_invalid_token passed with response code 401")
     
     # TEST 9
     # Get nearest cluster
@@ -228,6 +236,7 @@ class BasicTests(unittest.TestCase):
             self.assertTrue(
                 response.status_code in [204, 200]
             )
+            print("\nSUCCESSFUL: test_get_nearest passed with response code ", response.status_code)
     
     # TEST 10
     # Get nearest cluster
@@ -254,6 +263,7 @@ class BasicTests(unittest.TestCase):
             self.assertEqual(
                 response.status_code, 401
             )
+            print("\nSUCCESSFUL: test_get_nearest_invalid_token passed with response code 401")
 
     # TEST 11
     # Get nearest cluster
@@ -269,6 +279,7 @@ class BasicTests(unittest.TestCase):
             self.assertEqual(
                 response.status_code, 400
             )
+            print("\nSUCCESSFUL: test_get_nearest_without_token passed with response code 400")
     
     # TEST 12
     # Get nearest cluster
@@ -284,6 +295,7 @@ class BasicTests(unittest.TestCase):
             self.assertEqual(
                 response.status_code, 400
             )
+            print("\nSUCCESSFUL: test_get_nearest_without_location passed with response code 400")
     
    
 
