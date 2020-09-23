@@ -1,5 +1,4 @@
-# WT-2 Mini Project
-## Tree Plantation App
+# Tree Plantation App
 Flask-React app with MongoDB
 
 ## Installation
